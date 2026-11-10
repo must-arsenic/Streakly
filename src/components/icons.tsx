@@ -65,3 +65,20 @@ export function PlusIcon({ colour }: { colour: string }) {
 const styles = StyleSheet.create({
   box: { width: S, height: S, overflow: "hidden" },
 });
+
+export function BackIcon({ colour }: { colour: string }) {
+  return (
+    <View style={[styles.box, { alignItems: "center", justifyContent: "center" }]}>
+      <View
+        style={{
+          width: S * 0.45,
+          height: S * 0.45,
+          borderColor: colour,
+          borderLeftWidth: B + 0.5,
+          borderBottomWidth: B + 0.5,
+          transform: [{ translateX: S * 0.08 }, { rotate: "45deg" }],
+        }}
+      />
+    </View>
+  );
+}

@@ -1,9 +1,11 @@
 // The app's frame: the data opened before the first screen, the chosen theme, and the screens.
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { DarkTheme, DefaultTheme, router, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Platform, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
+
+import { BackIcon } from "@/components/icons";
 
 import { AppProvider } from "@/lib/app-state";
 import { open } from "@/lib/db";
@@ -60,6 +62,17 @@ function Frame() {
             headerTitleStyle: { fontSize: tokens.type.headline, fontWeight: "600" },
             headerShadowVisible: false,
             headerBackButtonDisplayMode: "minimal",
+            headerLeft: () => (
+              <Pressable
+                role="button"
+                accessibilityRole="button"
+                accessibilityLabel="Back"
+                onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+                style={styles.back}
+              >
+                <BackIcon colour={palette.text} />
+              </Pressable>
+            ),
             contentStyle: { backgroundColor: palette.bg },
           }}
         >
@@ -74,3 +87,7 @@ function Frame() {
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  back: { width: tokens.size.tick, height: tokens.size.tick, alignItems: "center", justifyContent: "center" },
+});
