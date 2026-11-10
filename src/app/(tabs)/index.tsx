@@ -49,7 +49,7 @@ export default function Today() {
               streak={current(dates, today)}
               best={best(dates)}
               lifted={lifted}
-              onTick={() => void saver.save(() => setTick(id, today, !ticked, today))}
+              onTick={() => void saver.save(() => setTick(id, today, !ticked))}
             />
           );
         }}

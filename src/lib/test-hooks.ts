@@ -55,11 +55,11 @@ type SeedHabit = { name: string; colour?: number; ticks?: (number | Day)[] };
 async function put(habits: SeedHabit[], options: { theme?: Theme; guideDone?: boolean } = {}): Promise<void> {
   const db = await open();
   const now = today();
-  await db.tx(async () => {
-    const max = await db.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
+  await db.tx(async (t) => {
+    const max = await t.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
     let position = (max[0]?.p ?? -1) + 1;
     for (const [i, h] of habits.entries()) {
-      await db.run(
+      await t.run(
         "INSERT INTO habits (name, colour, position, created_on) VALUES (?, ?, ?, ?);",
         h.name,
         h.colour ?? i % 8,
@@ -67,14 +67,14 @@ async function put(habits: SeedHabit[], options: { theme?: Theme; guideDone?: bo
         addDays(now, -30),
       );
       position += 1;
-      const [{ id }] = await db.all<{ id: number }>("SELECT last_insert_rowid() AS id;");
-      for (const t of h.ticks ?? []) {
-        const day = typeof t === "number" ? addDays(now, -t) : t;
-        await db.run("INSERT OR IGNORE INTO ticks (habit_id, date) VALUES (?, ?);", id, day);
+      const [{ id }] = await t.all<{ id: number }>("SELECT last_insert_rowid() AS id;");
+      for (const ago of h.ticks ?? []) {
+        const day = typeof ago === "number" ? addDays(now, -ago) : ago;
+        await t.run("INSERT OR IGNORE INTO ticks (habit_id, date) VALUES (?, ?);", id, day);
       }
     }
     const kv = (key: string, value: string) =>
-      db.run("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;", key, value);
+      t.run("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;", key, value);
     await kv("guideDone", options.guideDone === false ? "0" : "1");
     if (options.theme) await kv("theme", options.theme);
   });

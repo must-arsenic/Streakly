@@ -1,7 +1,7 @@
 // Habits, ticks and settings on the phone. Every change is one transaction over everything it
 // touches: it is saved whole, or nothing is. Screens show a change only after it is saved.
-import { open } from "./db";
-import { canTick, type Day } from "./days";
+import { type Db, open } from "./db";
+import { canTick, type Day, today } from "./days";
 import { readPoint, writePoint } from "./faults";
 
 export const NAME_MAX = 40;
@@ -81,8 +81,7 @@ export async function countTicks(habitId?: number): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
-async function setKv(key: string, value: string): Promise<void> {
-  const db = await open();
+async function setKv(db: Db, key: string, value: string): Promise<void> {
   await db.run("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;", key, value);
 }
 
@@ -91,11 +90,11 @@ export async function addHabit(name: string, colour: number, createdOn: Day): Pr
   const clean = checkHabit(name, colour);
   const db = await open();
   let id = 0;
-  await db.tx(async () => {
-    const max = await db.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
+  await db.tx(async (t) => {
+    const max = await t.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
     writePoint();
-    await db.run("INSERT INTO habits (name, colour, position, created_on) VALUES (?, ?, ?, ?);", clean, colour, (max[0]?.p ?? -1) + 1, createdOn);
-    const row = await db.all<{ id: number }>("SELECT last_insert_rowid() AS id;");
+    await t.run("INSERT INTO habits (name, colour, position, created_on) VALUES (?, ?, ?, ?);", clean, colour, (max[0]?.p ?? -1) + 1, createdOn);
+    const row = await t.all<{ id: number }>("SELECT last_insert_rowid() AS id;");
     id = row[0].id;
   });
   announce();
@@ -105,9 +104,9 @@ export async function addHabit(name: string, colour: number, createdOn: Day): Pr
 export async function updateHabit(id: number, name: string, colour: number): Promise<void> {
   const clean = checkHabit(name, colour);
   const db = await open();
-  await db.tx(async () => {
+  await db.tx(async (t) => {
     writePoint();
-    await db.run("UPDATE habits SET name = ?, colour = ? WHERE id = ?;", clean, colour, id);
+    await t.run("UPDATE habits SET name = ?, colour = ? WHERE id = ?;", clean, colour, id);
   });
   announce();
 }
@@ -115,22 +114,25 @@ export async function updateHabit(id: number, name: string, colour: number): Pro
 /** Removes the habit and all its ticks, together. */
 export async function deleteHabit(id: number): Promise<void> {
   const db = await open();
-  await db.tx(async () => {
-    await db.run("DELETE FROM ticks WHERE habit_id = ?;", id);
+  await db.tx(async (t) => {
+    await t.run("DELETE FROM ticks WHERE habit_id = ?;", id);
     writePoint();
-    await db.run("DELETE FROM habits WHERE id = ?;", id);
+    await t.run("DELETE FROM habits WHERE id = ?;", id);
   });
   announce();
 }
 
-/** Ticks or unticks a habit on a day; only today and the 6 days before are allowed. */
-export async function setTick(habitId: number, day: Day, ticked: boolean, todayDay: Day): Promise<void> {
+/**
+ * Ticks or unticks a habit on a day; only today and the 6 days before are allowed, checked against
+ * the phone's date when the save runs (so a retry the next day is checked again).
+ */
+export async function setTick(habitId: number, day: Day, ticked: boolean, todayDay: Day = today()): Promise<void> {
   if (!canTick(day, todayDay)) throw new RangeError("Only today and the 6 days before can be ticked");
   const db = await open();
-  await db.tx(async () => {
+  await db.tx(async (t) => {
     writePoint();
-    if (ticked) await db.run("INSERT OR IGNORE INTO ticks (habit_id, date) SELECT id, ? FROM habits WHERE id = ?;", day, habitId);
-    else await db.run("DELETE FROM ticks WHERE habit_id = ? AND date = ?;", habitId, day);
+    if (ticked) await t.run("INSERT OR IGNORE INTO ticks (habit_id, date) SELECT id, ? FROM habits WHERE id = ?;", day, habitId);
+    else await t.run("DELETE FROM ticks WHERE habit_id = ? AND date = ?;", habitId, day);
   });
   announce();
 }
@@ -138,9 +140,9 @@ export async function setTick(habitId: number, day: Day, ticked: boolean, todayD
 /** Saves a new list order: `ids` from first to last. */
 export async function reorder(ids: number[]): Promise<void> {
   const db = await open();
-  await db.tx(async () => {
+  await db.tx(async (t) => {
     for (let i = 0; i < ids.length; i += 1) {
-      await db.run("UPDATE habits SET position = ? WHERE id = ?;", i, ids[i]);
+      await t.run("UPDATE habits SET position = ? WHERE id = ?;", i, ids[i]);
       if (i === 0) writePoint();
     }
   });
@@ -149,18 +151,18 @@ export async function reorder(ids: number[]): Promise<void> {
 
 export async function setTheme(theme: Theme): Promise<void> {
   const db = await open();
-  await db.tx(async () => {
+  await db.tx(async (t) => {
     writePoint();
-    await setKv("theme", theme);
+    await setKv(t, "theme", theme);
   });
   announce();
 }
 
 export async function setGuideDone(done: boolean): Promise<void> {
   const db = await open();
-  await db.tx(async () => {
+  await db.tx(async (t) => {
     writePoint();
-    await setKv("guideDone", done ? "1" : "0");
+    await setKv(t, "guideDone", done ? "1" : "0");
   });
   announce();
 }
@@ -168,12 +170,12 @@ export async function setGuideDone(done: boolean): Promise<void> {
 /** Removes every habit and tick, resets the theme to "System" and brings the guide back. */
 export async function deleteAll(): Promise<void> {
   const db = await open();
-  await db.tx(async () => {
-    await db.run("DELETE FROM ticks;");
+  await db.tx(async (t) => {
+    await t.run("DELETE FROM ticks;");
     writePoint();
-    await db.run("DELETE FROM habits;");
-    await setKv("theme", "system");
-    await setKv("guideDone", "0");
+    await t.run("DELETE FROM habits;");
+    await setKv(t, "theme", "system");
+    await setKv(t, "guideDone", "0");
   });
   announce();
 }

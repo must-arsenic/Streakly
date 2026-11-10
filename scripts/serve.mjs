@@ -4,7 +4,8 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 
-const root = new URL("../dist/", import.meta.url).pathname;
+// DIST_DIR picks another export (the browser checks use dist-e2e, built with the test hooks on).
+const root = new URL(`../${process.env.DIST_DIR ?? "dist"}/`, import.meta.url).pathname;
 const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".ico": "image/x-icon", ".svg": "image/svg+xml", ".wasm": "application/wasm", ".ttf": "font/ttf" };
 const port = Number(process.env.PORT ?? 3000);
 

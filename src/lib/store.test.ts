@@ -104,3 +104,16 @@ test("names are trimmed and must be 1 to 40 characters", async () => {
   await addHabit("  Read  ", 0, T);
   expect((await loadList()).habits[0].name).toBe("Read");
 });
+
+test("[utest->ac~streakly.no-partial-saves.delete~1] saves started together never share a transaction", async () => {
+  const id = await stretchWithFive();
+  const other = await addHabit("Water", 0, T);
+  // the habit's delete fails while a tick save for another habit runs at the same time
+  db.failWhen((sql) => sql.startsWith("DELETE FROM habits"));
+  const results = await Promise.allSettled([deleteHabit(id), setTick(other, T, true, T), loadList()]);
+  db.failWhen(null);
+  expect(results[0].status).toBe("rejected");
+  expect(results[1].status).toBe("fulfilled");
+  expect(await countTicks(id)).toBe(5);
+  expect(await countTicks(other)).toBe(1);
+});

@@ -67,3 +67,15 @@ test("[utest->ac~streakly.no-out-of-range-ticks.refused~1] tomorrow and 7 days a
   await expect(setTick(id, addDays(T, -7), true, T)).rejects.toThrow(RangeError);
   expect((await loadList()).ticks[id]).toEqual([]);
 });
+
+test("[utest->ac~streakly.no-out-of-range-ticks.refused~1] a tick is checked against the date when it is saved", async () => {
+  useDbForTests(nodeDb());
+  await migrate(await open());
+  const now = today();
+  const id = await addHabit("Water", 0, now);
+  // a change made 7 days ago for its own today, retried now, is refused
+  await expect(setTick(id, addDays(now, -7), true)).rejects.toThrow(RangeError);
+  await expect(setTick(id, addDays(now, 1), true)).rejects.toThrow(RangeError);
+  await setTick(id, now, true);
+  expect((await loadList()).ticks[id]).toEqual([now]);
+});

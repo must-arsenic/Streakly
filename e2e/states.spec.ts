@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { hook, start, tab } from "./helpers";
+import { act, hook, start, tab } from "./helpers";
 
 test("[e2e->ac~streakly.first-run.shows~1] the first open shows guide card 1 of 3", async ({ page }) => {
   await hook(page, "reset");
@@ -60,6 +60,22 @@ test("[e2e->ac~streakly.states.error~1] a load error offers Try again", async ({
   await hook(page, "force?route=/week&mode=error");
   await page.goto("/week");
   await expect(page.getByText("Couldn't load your habits")).toBeVisible();
+});
+
+test("[e2e->ac~streakly.states.error~1] unreadable settings show the load error, not the guide", async ({ page }) => {
+  await start(page, "two-habits");
+  await hook(page, "force?route=app&mode=error");
+  await page.goto("/");
+  await expect(page.getByText("Couldn't load your habits")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Skip" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
+  // Try again while still unreadable: the error stays
+  await page.getByRole("button", { name: "Try again" }).click();
+  await expect(page.getByText("Couldn't load your habits")).toBeVisible();
+  // once storage reads again (the hook announces the change, so the app reads it again) Today shows
+  await act(page, "seed", { name: "reads-work" });
+  await expect(page.getByRole("link", { name: "Water" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Skip" })).toHaveCount(0);
 });
 
 test("[e2e->ac~streakly.states.retry~1] Try again after a load error lists the habits", async ({ page }) => {

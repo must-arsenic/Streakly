@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { BackIcon } from "@/components/icons";
+import { LoadError } from "@/components/ui";
 
 import { AppProvider } from "@/lib/app-state";
 import { open } from "@/lib/db";
@@ -27,14 +28,24 @@ export default function RootLayout() {
   if (!ready) return null;
   return (
     <AppProvider>
-      {({ settings, loaded }) =>
-        loaded ? (
+      {({ settings, status, retry }) =>
+        status === "loading" ? null : (
           <ThemeChoice.Provider value={settings.theme}>
-            <Frame />
+            {status === "error" ? <CantLoad onRetry={retry} /> : <Frame />}
           </ThemeChoice.Provider>
-        ) : null
+        )
       }
     </AppProvider>
+  );
+}
+
+/** The stored settings couldn't be read: never guess (the guide would show), offer a retry. */
+function CantLoad({ onRetry }: { onRetry: () => void }) {
+  const palette = usePalette();
+  return (
+    <View testID="app-ready" style={[styles.cantLoad, { backgroundColor: palette.bg }]}>
+      <LoadError onRetry={onRetry} />
+    </View>
   );
 }
 
@@ -89,5 +100,6 @@ function Frame() {
 }
 
 const styles = StyleSheet.create({
+  cantLoad: { flex: 1, justifyContent: "center" },
   back: { width: tokens.size.tick, height: tokens.size.tick, alignItems: "center", justifyContent: "center" },
 });

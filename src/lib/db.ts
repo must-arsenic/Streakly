@@ -10,8 +10,11 @@ export interface Db {
   exec(sql: string): Promise<void>;
   run(sql: string, ...params: Param[]): Promise<void>;
   all<T>(sql: string, ...params: Param[]): Promise<T[]>;
-  /** Runs `task` in one transaction: every change in it is saved, or none is. */
-  tx(task: () => Promise<void>): Promise<void>;
+  /**
+   * Runs `task` in one transaction: every change in it is saved, or none is. The task makes its
+   * queries through the handle it is given; nothing else runs until it ends.
+   */
+  tx(task: (t: Db) => Promise<void>): Promise<void>;
 }
 
 let opened: Promise<Db> | null = null;
@@ -36,27 +39,33 @@ export function useDbForTests(db: Db | null): void {
 }
 
 function expoDb(raw: SQLite.SQLiteDatabase): Db {
+  return serialised(
+    {
+      exec: (sql) => raw.execAsync(sql),
+      run: async (sql, ...params) => void (await raw.runAsync(sql, params)),
+      all: <T,>(sql: string, ...params: Param[]) => raw.getAllAsync<T>(sql, params),
+    },
+    (task) => raw.withTransactionAsync(task),
+  );
+}
+
+/**
+ * One queue over a connection: each query, and each whole transaction, runs alone. Inside a
+ * transaction the task's queries go straight to the connection, which the queue already holds.
+ */
+export function serialised(direct: Omit<Db, "tx">, transaction: (task: () => Promise<void>) => Promise<void>): Db {
   let queue: Promise<unknown> = Promise.resolve();
-  let inTx = false;
-  const serial = <T>(work: () => Promise<T>): Promise<T> => {
-    if (inTx) return work();
+  const serial = <T,>(work: () => Promise<T>): Promise<T> => {
     const next = queue.then(work, work);
     queue = next.catch(() => undefined);
     return next;
   };
+  const inside: Db = { ...direct, tx: (task) => task(inside) };
   return {
-    exec: (sql) => serial(() => raw.execAsync(sql)),
-    run: (sql, ...params) => serial(async () => void (await raw.runAsync(sql, params))),
-    all: <T,>(sql: string, ...params: Param[]) => serial(() => raw.getAllAsync<T>(sql, params)),
-    tx: (task) =>
-      serial(async () => {
-        inTx = true;
-        try {
-          await raw.withTransactionAsync(task);
-        } finally {
-          inTx = false;
-        }
-      }),
+    exec: (sql) => serial(() => direct.exec(sql)),
+    run: (sql, ...params) => serial(() => direct.run(sql, ...params)),
+    all: <T,>(sql: string, ...params: Param[]) => serial(() => direct.all<T>(sql, ...params)),
+    tx: (task) => serial(() => transaction(() => task(inside))),
   };
 }
 
@@ -86,9 +95,9 @@ export async function migrate(db: Db): Promise<void> {
   while (version < steps.length) {
     const step = steps[version];
     version += 1;
-    await db.tx(async () => {
-      await db.exec(step);
-      await db.run("UPDATE schema_version SET version = ?;", version);
+    await db.tx(async (t) => {
+      await t.exec(step);
+      await t.run("UPDATE schema_version SET version = ?;", version);
     });
   }
 }
@@ -96,7 +105,5 @@ export async function migrate(db: Db): Promise<void> {
 /** Every table emptied: add each new table here. */
 export async function reset(): Promise<void> {
   const db = await open();
-  await db.tx(async () => {
-    await db.exec("DELETE FROM ticks; DELETE FROM habits; DELETE FROM kv;");
-  });
+  await db.tx((t) => t.exec("DELETE FROM ticks; DELETE FROM habits; DELETE FROM kv;"));
 }
