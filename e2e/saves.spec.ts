@@ -20,10 +20,10 @@ test("[e2e->ac~streakly.save-errors.reorder~1] a failed reorder keeps the old or
   await drag(page, "Stretch", "Water");
   await expect(banner(page)).toBeVisible();
   await expect(banner(page).getByRole("button", { name: "Try again" })).toBeVisible();
-  expect(await todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
+  await expect.poll(() => todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
   await page.reload();
   await expect(page.getByRole("link", { name: "Stretch" })).toBeVisible();
-  expect(await todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
+  await expect.poll(() => todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
 });
 
 test("[e2e->ac~streakly.save-errors.theme~1] a failed theme change keeps the light theme", async ({ page }) => {

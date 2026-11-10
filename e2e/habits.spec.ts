@@ -11,13 +11,13 @@ test("[e2e->ac~streakly.habit-add.saves~1] a new habit goes at the end of Today"
   await page.getByRole("radio").nth(2).click();
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("link", { name: "Stretch" })).toBeVisible();
-  expect(await todayNames(page)).toEqual(["Drink water", "Stretch"]);
+  await expect.poll(() => todayNames(page)).toEqual(["Drink water", "Stretch"]);
   const row = page.locator('[data-testid^="habit-row-"]').nth(1);
   await expect(row.getByText("0-day streak", { exact: true })).toBeVisible();
   await expect(row.getByText("Best: 0", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("link", { name: "Stretch" })).toBeVisible();
-  expect(await todayNames(page)).toEqual(["Drink water", "Stretch"]);
+  await expect.poll(() => todayNames(page)).toEqual(["Drink water", "Stretch"]);
   // the third colour was kept
   await page.getByRole("link", { name: "Stretch" }).click();
   await expect(page.getByRole("radio").nth(2)).toHaveAttribute("aria-checked", "true");
@@ -140,13 +140,13 @@ test("[e2e->ac~streakly.tick-today.untick~1] tapping again unticks", async ({ pa
 
 test("[e2e->ac~streakly.habit-reorder.persists~1] a dragged order sticks after a restart", async ({ page }) => {
   await start(page, "water-read-stretch");
-  expect(await todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
+  await expect.poll(() => todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
   await page.getByRole("link", { name: "Stretch" }).scrollIntoViewIfNeeded();
   await drag(page, "Stretch", "Water");
   await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
   await page.reload();
   await expect(page.getByRole("link", { name: "Stretch" })).toBeVisible();
-  expect(await todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
+  await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
   await tab(page, "Week");
   const rows = page.locator('[data-testid^="week-row-"] [role="rowheader"]');
   await expect(rows).toHaveText(["Stretch", "Water", "Read"]);

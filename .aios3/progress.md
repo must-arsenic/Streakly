@@ -21,3 +21,5 @@
 - setTick checks the window against the date when it runs (retries re-checked).
 - Settings unreadable on start -> "Couldn't load your habits" + Try again, never the guide.
 - Guide must wait for the reloaded settings before leaving, or Today redirects back.
+- After the studio restart: status.json was gone; re-ran everything. Fixed a test race (habit names read before the list
+  loaded) by polling todayNames everywhere. Full suite passes twice over (88/88).
