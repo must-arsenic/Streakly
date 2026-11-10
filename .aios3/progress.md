@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (17 jest, 44 playwright)
+## State: all items done, every test passes (19 jest, 45 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -23,3 +23,5 @@
 - Guide must wait for the reloaded settings before leaving, or Today redirects back.
 - After the studio restart: status.json was gone; re-ran everything. Fixed a test race (habit names read before the list
   loaded) by polling todayNames everywhere. Full suite passes twice over (88/88).
+- Round 2: faults.ts only keeps/reads sessionStorage faults in a hooks build (unit test: faults.test.ts);
+  root shows "Loading your habits…" (Starting) while the database opens and settings are read (e2e: force app slow).

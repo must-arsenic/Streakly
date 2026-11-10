@@ -1,10 +1,12 @@
 // Storage faults the test hooks can switch on, so save and load failures can be reached. They stay
-// off in the person's app: only the test hooks and unit tests set them. On the web they are kept in
-// sessionStorage so a page reload keeps them.
+// off in the person's app: only the test hooks (which answer only when switched on) and unit tests
+// set them, and only a build with the hooks on keeps them in sessionStorage (on the web, so a page
+// reload keeps them) or reads them back from it.
 
 type Faults = { writes: boolean; readsOnce: number };
 
 const KEY = "streakly.faults";
+const hooksBuild = process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS === "1";
 let faults: Faults = load();
 
 function storage(): Storage | undefined {
@@ -16,6 +18,7 @@ function storage(): Storage | undefined {
 }
 
 function load(): Faults {
+  if (!hooksBuild) return { writes: false, readsOnce: 0 };
   try {
     const raw = storage()?.getItem(KEY);
     if (raw) return { writes: false, readsOnce: 0, ...JSON.parse(raw) };
@@ -26,6 +29,7 @@ function load(): Faults {
 }
 
 function save(): void {
+  if (!hooksBuild) return;
   try {
     storage()?.setItem(KEY, JSON.stringify(faults));
   } catch {

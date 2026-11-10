@@ -51,6 +51,14 @@ test("[e2e->ac~streakly.states.loading~1] Loading shows while stored data is rea
   await expect(page.getByText("Water")).toBeVisible({ timeout: 10_000 });
 });
 
+test("[e2e->ac~streakly.states.loading~1] Loading shows while the settings are read at start", async ({ page }) => {
+  await start(page, "two-habits");
+  await hook(page, "force?route=app&mode=slow");
+  await page.goto("/");
+  await expect(page.getByText("Loading your habits…")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Water" })).toBeVisible({ timeout: 15_000 });
+});
+
 test("[e2e->ac~streakly.states.error~1] a load error offers Try again", async ({ page }) => {
   await start(page, "two-habits");
   await hook(page, "force?route=/&mode=error");

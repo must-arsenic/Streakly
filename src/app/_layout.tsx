@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { BackIcon } from "@/components/icons";
-import { LoadError } from "@/components/ui";
+import { Loading, LoadError } from "@/components/ui";
 
 import { AppProvider } from "@/lib/app-state";
 import { open } from "@/lib/db";
@@ -25,17 +25,29 @@ export default function RootLayout() {
         SplashScreen.hideAsync();
       });
   }, []);
-  if (!ready) return null;
+  if (!ready) return <Starting />;
   return (
     <AppProvider>
       {({ settings, status, retry }) =>
-        status === "loading" ? null : (
+        status === "loading" ? (
+          <Starting />
+        ) : (
           <ThemeChoice.Provider value={settings.theme}>
             {status === "error" ? <CantLoad onRetry={retry} /> : <Frame />}
           </ThemeChoice.Provider>
         )
       }
     </AppProvider>
+  );
+}
+
+/** Stored data is still being read (the phone's light or dark until the theme is known). */
+function Starting() {
+  const palette = usePalette();
+  return (
+    <View style={[styles.cantLoad, { backgroundColor: palette.bg }]}>
+      <Loading />
+    </View>
   );
 }
 
