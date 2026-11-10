@@ -1,12 +1,14 @@
 // The first-run guide: three cards (adding a habit, ticking it, the week view) with "Next" and
 // "Skip", and "Get started" on the last. Finishing or skipping means it never shows again.
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Button, Page } from "@/components/ui";
+import { Button, Page, SaveError } from "@/components/ui";
+import { useApp } from "@/lib/app-state";
 import { setGuideDone } from "@/lib/store";
+import { useSave } from "@/lib/use-save";
 import { tokens } from "@/theme/tokens";
 import { usePalette } from "@/theme/use-palette";
 
@@ -23,18 +25,21 @@ export default function Welcome() {
   const card = cards[index];
   const last = index === cards.length - 1;
 
+  const { settings } = useApp();
+  const saver = useSave();
+  const [leaving, setLeaving] = useState(false);
+  // Leave once the finished guide is saved and the app has it, so Today doesn't send us back.
+  useEffect(() => {
+    if (leaving && settings.guideDone) router.replace("/");
+  }, [leaving, settings.guideDone]);
   const finish = async () => {
-    try {
-      await setGuideDone(true);
-    } catch {
-      // the guide closes either way; it shows again next time if this wasn't saved
-    }
-    router.replace("/");
+    if (await saver.save(() => setGuideDone(true))) setLeaving(true);
   };
 
   return (
     <Page>
       <View style={[styles.wrap, { paddingTop: insets.top + tokens.space.xxl }]}>
+        {saver.failed ? <SaveError onRetry={() => void finish()} busy={saver.busy} /> : null}
         <Image
           source={require("@/assets/images/logo-mark.png")}
           style={[styles.logo, { backgroundColor: p.accent }]}
