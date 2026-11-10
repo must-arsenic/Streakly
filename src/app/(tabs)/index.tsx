@@ -28,7 +28,8 @@ export default function Today() {
   let summary: string | undefined;
   if (list.state === "loading") body = <Loading />;
   else if (list.state === "error") body = <LoadError onRetry={retryLoad} />;
-  else if (list.data.habits.length === 0) body = <Empty onAdd={add} what="Add the daily habits you want to keep, then tick them off here." />;
+  else if (list.data.habits.length === 0)
+    body = <Empty onAdd={add} what="Add the daily habits you want to keep, then tick them off here." />;
   else {
     const { habits, ticks } = list.data;
     const byId = new Map(habits.map((h) => [h.id, h]));
@@ -64,16 +65,20 @@ export default function Today() {
         {saver.failed ? <SaveError onRetry={saver.retry} busy={saver.busy} /> : null}
         {body}
       </Page>
-      <Pressable
-        role="button"
-        accessibilityRole="button"
-        accessibilityLabel="+"
-        accessibilityHint="Add a habit"
-        onPress={add}
-        style={({ pressed }) => [styles.fab, { backgroundColor: pressed ? p.accentHover : p.accent, shadowColor: p.shadow }]}
-      >
-        <PlusIcon colour={p.onAccent} />
-      </Pressable>
+      <View pointerEvents="box-none" style={styles.fabLayer}>
+        <View pointerEvents="box-none" style={styles.fabColumn}>
+          <Pressable
+            role="button"
+            accessibilityRole="button"
+            accessibilityLabel="+"
+            accessibilityHint="Add a habit"
+            onPress={add}
+            style={({ pressed }) => [styles.fab, { backgroundColor: pressed ? p.accentHover : p.accent, shadowColor: p.shadow }]}
+          >
+            <PlusIcon colour={p.onAccent} />
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -98,7 +103,11 @@ function HabitRow({
   return (
     <View
       testID={`habit-row-${habit.id}`}
-      style={[styles.row, { backgroundColor: p.surface, borderColor: lifted ? p.accent : p.border, shadowColor: p.shadow }, lifted ? styles.lifted : null]}
+      style={[
+        styles.row,
+        { backgroundColor: p.surface, borderColor: lifted ? p.accent : p.border, shadowColor: p.shadow },
+        lifted ? styles.lifted : null,
+      ]}
     >
       <View style={[styles.bar, { backgroundColor: colour }]} />
       <Pressable
@@ -164,10 +173,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  fab: {
+  fabLayer: {
     position: "absolute",
-    right: tokens.space.xl,
+    left: 0,
+    right: 0,
     bottom: tokens.space.xl,
+    alignItems: "center",
+  },
+  fabColumn: { width: "100%", maxWidth: tokens.size.content, alignItems: "flex-end", paddingHorizontal: tokens.space.xl },
+  fab: {
     width: tokens.size.fab,
     height: tokens.size.fab,
     borderRadius: tokens.radius.pill,
