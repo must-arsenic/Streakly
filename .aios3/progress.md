@@ -25,3 +25,4 @@
   loaded) by polling todayNames everywhere. Full suite passes twice over (88/88).
 - Round 2: faults.ts only keeps/reads sessionStorage faults in a hooks build (unit test: faults.test.ts);
   root shows "Loading your habits…" (Starting) while the database opens and settings are read (e2e: force app slow).
+- After the second restart: status.json gone again; re-ran everything, all green (19 jest, 90/90 e2e over 2 repeats).
