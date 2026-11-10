@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (18 jest, 44 playwright)
+## State: all items done, every test passes (17 jest, 44 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
