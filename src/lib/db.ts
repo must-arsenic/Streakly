@@ -12,9 +12,10 @@ export interface Db {
   all<T>(sql: string, ...params: Param[]): Promise<T[]>;
   /**
    * Runs `task` in one transaction: every change in it is saved, or none is. The task makes its
-   * queries through the handle it is given; nothing else runs until it ends.
+   * queries through the handle it is given (callers default it to the database itself, for a Db
+   * that passes none); nothing else runs until it ends.
    */
-  tx(task: (t: Db) => Promise<void>): Promise<void>;
+  tx(task: (t?: Db) => Promise<void>): Promise<void>;
 }
 
 let opened: Promise<Db> | null = null;
@@ -95,7 +96,7 @@ export async function migrate(db: Db): Promise<void> {
   while (version < steps.length) {
     const step = steps[version];
     version += 1;
-    await db.tx(async (t) => {
+    await db.tx(async (t = db) => {
       await t.exec(step);
       await t.run("UPDATE schema_version SET version = ?;", version);
     });
@@ -105,5 +106,5 @@ export async function migrate(db: Db): Promise<void> {
 /** Every table emptied: add each new table here. */
 export async function reset(): Promise<void> {
   const db = await open();
-  await db.tx((t) => t.exec("DELETE FROM ticks; DELETE FROM habits; DELETE FROM kv;"));
+  await db.tx((t = db) => t.exec("DELETE FROM ticks; DELETE FROM habits; DELETE FROM kv;"));
 }

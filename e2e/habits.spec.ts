@@ -12,6 +12,11 @@ test("[e2e->ac~streakly.habit-add.saves~1] a new habit goes at the end of Today"
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("link", { name: "Stretch" })).toBeVisible();
   await expect.poll(() => todayNames(page)).toEqual(["Drink water", "Stretch"]);
+  const items = page.getByRole("listitem");
+  await expect(items).toHaveCount(2);
+  await expect(items.nth(0)).toContainText("Drink water");
+  await expect(items.nth(1)).toContainText("Stretch");
+  await expect(items.nth(1)).toContainText("0-day streak");
   const row = page.locator('[data-testid^="habit-row-"]').nth(1);
   await expect(row.getByText("0-day streak", { exact: true })).toBeVisible();
   await expect(row.getByText("Best: 0", { exact: true })).toBeVisible();
@@ -82,7 +87,7 @@ test("[e2e->ac~streakly.habit-delete.confirm~1] Delete habit asks first", async 
   await start(page, "stretch-5-ticks");
   await page.getByText("Stretch", { exact: true }).click();
   await page.getByRole("button", { name: "Delete habit" }).click();
-  const prompt = page.getByRole("alertdialog");
+  const prompt = page.getByRole("dialog");
   await expect(prompt.getByText("Delete this habit and all its history?")).toBeVisible();
   await expect(prompt.getByRole("button", { name: "Delete", exact: true })).toBeVisible();
   await expect(prompt.getByRole("button", { name: "Cancel" })).toBeVisible();
@@ -92,7 +97,7 @@ test("[e2e->ac~streakly.habit-delete.cancel~1] Cancel keeps the habit", async ({
   await start(page, "stretch-5-ticks");
   await page.getByText("Stretch", { exact: true }).click();
   await page.getByRole("button", { name: "Delete habit" }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
   await expect(page.getByText("Delete this habit and all its history?")).toBeHidden();
   await expect(page).toHaveURL(/\/habits\/\d+$/);
   await expect(page.getByLabel("Name")).toHaveValue("Stretch");
@@ -105,7 +110,7 @@ test("[e2e->ac~streakly.habit-delete.removes~1] Delete removes the habit and its
   await start(page, "stretch-5-ticks");
   await page.getByText("Stretch", { exact: true }).click();
   await page.getByRole("button", { name: "Delete habit" }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete", exact: true }).click();
   await expect(page.getByText("No habits yet")).toBeVisible();
   await expect(page.getByText("Stretch")).toHaveCount(0);
   await tab(page, "Week");

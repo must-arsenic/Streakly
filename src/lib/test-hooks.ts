@@ -55,7 +55,7 @@ type SeedHabit = { name: string; colour?: number; ticks?: (number | Day)[] };
 async function put(habits: SeedHabit[], options: { theme?: Theme; guideDone?: boolean } = {}): Promise<void> {
   const db = await open();
   const now = today();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     const max = await t.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
     let position = (max[0]?.p ?? -1) + 1;
     for (const [i, h] of habits.entries()) {
@@ -130,20 +130,20 @@ export async function act(action: string, params: Record<string, string | undefi
       saveForced();
       clearFaults();
       await reset();
-      announce();
+      announce(true);
       return true;
     case "seed": {
       const seed = params.name ? seeds[params.name] : undefined;
       if (!seed) return false;
       await seed();
-      announce();
+      announce(true);
       return true;
     }
     case "force":
       if (!params.route || !["empty", "slow", "error"].includes(params.mode ?? "")) return false;
       forced.set(routeKey(params.route), params.mode as Mode);
       saveForced();
-      announce();
+      announce(true);
       return true;
     default:
       return false;

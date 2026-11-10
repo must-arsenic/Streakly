@@ -21,7 +21,7 @@ function useRead<T>(read: () => Promise<T>, deps: unknown[]): [Loaded<T>, () => 
   }, deps);
   useEffect(() => {
     load(true);
-    return onChange(() => load(false));
+    return onChange((fresh) => load(fresh));
   }, [load]);
   const retry = useCallback(() => load(true), [load]);
   return [loaded, retry];

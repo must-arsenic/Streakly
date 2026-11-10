@@ -6,7 +6,11 @@ import { type Db, type Param, serialised } from "./db";
 type Statement = { run(...p: Param[]): unknown; all(...p: Param[]): unknown[] };
 type Sync = { exec(sql: string): void; prepare(sql: string): Statement };
 
-export function nodeDb(): Db & { failWhen: (test: ((sql: string) => boolean) | null) => void } {
+/**
+ * `plain`: no queue, and transactions call their task with no handle, as a hand-written test
+ * database might.
+ */
+export function nodeDb({ plain = false } = {}): Db & { failWhen: (test: ((sql: string) => boolean) | null) => void } {
   const { DatabaseSync } = jest.requireActual<{ DatabaseSync: new (path: string) => Sync }>("node:sqlite");
   const raw = new DatabaseSync(":memory:");
   let fail: ((sql: string) => boolean) | null = null;
@@ -15,33 +19,32 @@ export function nodeDb(): Db & { failWhen: (test: ((sql: string) => boolean) | n
   };
   // a tick between statements, as a real connection has
   const later = () => new Promise((r) => setTimeout(r, 0));
-  const db = serialised(
-    {
-      exec: async (sql) => {
-        await later();
-        check(sql);
-        raw.exec(sql);
-      },
-      run: async (sql, ...params) => {
-        await later();
-        check(sql);
-        raw.prepare(sql).run(...params);
-      },
-      all: async <T,>(sql: string, ...params: Param[]) => {
-        await later();
-        return raw.prepare(sql).all(...params) as T[];
-      },
+  const direct: Omit<Db, "tx"> = {
+    exec: async (sql) => {
+      await later();
+      check(sql);
+      raw.exec(sql);
     },
-    async (task) => {
-      raw.exec("BEGIN;");
-      try {
-        await task();
-        raw.exec("COMMIT;");
-      } catch (e) {
-        raw.exec("ROLLBACK;");
-        throw e;
-      }
+    run: async (sql, ...params) => {
+      await later();
+      check(sql);
+      raw.prepare(sql).run(...params);
     },
-  );
+    all: async <T>(sql: string, ...params: Param[]) => {
+      await later();
+      return raw.prepare(sql).all(...params) as T[];
+    },
+  };
+  const transaction = async (task: () => Promise<void>) => {
+    raw.exec("BEGIN;");
+    try {
+      await task();
+      raw.exec("COMMIT;");
+    } catch (e) {
+      raw.exec("ROLLBACK;");
+      throw e;
+    }
+  };
+  const db: Db = plain ? { ...direct, tx: (task) => transaction(() => task()) } : serialised(direct, transaction);
   return { ...db, failWhen: (test) => void (fail = test) };
 }

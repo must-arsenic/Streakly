@@ -142,7 +142,7 @@ export function Confirm({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={[styles.backdrop, { backgroundColor: p.backdrop }]}>
-        <View role="alertdialog" aria-modal accessibilityViewIsModal aria-label={message} style={[styles.dialog, { backgroundColor: p.surface, borderColor: p.border }]}>
+        <View role="dialog" aria-modal accessibilityViewIsModal aria-label={message} style={[styles.dialog, { backgroundColor: p.surface, borderColor: p.border }]}>
           <Text style={[styles.dialogText, { color: p.text }]}>{message}</Text>
           <View style={styles.dialogButtons}>
             <Button label="Cancel" kind="secondary" onPress={onCancel} disabled={busy} />

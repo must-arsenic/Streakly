@@ -32,7 +32,7 @@ export default function Week() {
     const { habits, ticks } = list.data;
     body = (
       <View role="grid" accessibilityLabel="Week view" style={styles.grid}>
-        <View role="row" style={[styles.cells, styles.header]} testID="week-header">
+        <View role="rowgroup" style={[styles.cells, styles.header]} testID="week-header">
           {days.map((day) => (
             <View key={day} role="columnheader" style={styles.column} testID={`week-column-${day}`}>
               <Text style={[styles.head, { color: day === today ? p.accent : p.muted }]}>{`${weekdayShort(day)}\n${dayNumber(day)}`}</Text>

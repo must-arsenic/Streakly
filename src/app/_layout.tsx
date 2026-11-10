@@ -1,5 +1,5 @@
 // The app's frame: the data opened before the first screen, the chosen theme, and the screens.
-import { DarkTheme, DefaultTheme, router, Stack, ThemeProvider } from "expo-router";
+import { DarkTheme, DefaultTheme, router, Stack, ThemeProvider, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -64,6 +64,8 @@ function CantLoad({ onRetry }: { onRetry: () => void }) {
 function Frame() {
   const scheme = useScheme();
   const palette = usePalette();
+  // A test hook's page isn't ready until the hook has run and moved on.
+  const hooking = usePathname().startsWith("/__test");
   useEffect(() => {
     if (Platform.OS !== "web" || typeof document === "undefined") return;
     document.documentElement.dataset.theme = scheme;
@@ -77,7 +79,7 @@ function Frame() {
   };
   return (
     <ThemeProvider value={navTheme}>
-      <View testID="app-ready" style={{ flex: 1, backgroundColor: palette.bg }}>
+      <View testID={hooking ? "app-hook" : "app-ready"} style={{ flex: 1, backgroundColor: palette.bg }}>
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: palette.bg },

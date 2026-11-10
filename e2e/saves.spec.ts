@@ -44,7 +44,7 @@ test("[e2e->ac~streakly.save-errors.delete-habit~1] a failed deletion keeps the 
   await start(page, "stretch-5-ticks", "writes-fail");
   await page.getByText("Stretch", { exact: true }).click();
   await page.getByRole("button", { name: "Delete habit" }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete", exact: true }).click();
   await expect(banner(page)).toBeVisible();
   await expect(banner(page).getByRole("button", { name: "Try again" })).toBeVisible();
   await page.goto("/");
@@ -57,7 +57,7 @@ test("[e2e->ac~streakly.save-errors.delete-all~1] a failed delete-all keeps ever
   await start(page, "three-habits-ticked-dark", "writes-fail");
   await tab(page, "Settings");
   await page.getByRole("button", { name: "Delete all data" }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Delete everything" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete everything" }).click();
   await expect(banner(page)).toBeVisible();
   await expect(banner(page).getByRole("button", { name: "Try again" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Get started" }).or(page.getByRole("button", { name: "Skip" }))).toHaveCount(0);

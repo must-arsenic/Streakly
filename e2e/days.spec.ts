@@ -12,6 +12,7 @@ test("[e2e->ac~streakly.week-view.grid~1] 3 rows and 7 columns ending today", as
   await start(page, "water-read-stretch");
   await tab(page, "Week");
   await expect(page.locator('[data-testid^="week-row-"]')).toHaveCount(3);
+  await expect(page.getByRole("row")).toHaveCount(3);
   const headers = page.getByRole("columnheader");
   await expect(headers).toHaveCount(7);
   const now = new Date();

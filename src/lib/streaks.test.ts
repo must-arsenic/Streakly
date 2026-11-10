@@ -24,3 +24,11 @@ test("[utest->ac~streakly.streak-best.longest~1] runs of 3, 7 then 2 ending toda
   expect(current(dates, T)).toBe(2);
   expect(best([])).toBe(0);
 });
+
+test("streaks take Date values and default today to now", () => {
+  const now = new Date();
+  const at = (n: number) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - n, 12);
+  expect(current([at(0), at(1), at(2)])).toBe(3);
+  expect(current([at(1), at(2)], now)).toBe(2);
+  expect(best([at(5), at(4), at(1)])).toBe(2);
+});

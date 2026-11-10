@@ -1,5 +1,5 @@
 // The Add and Edit habit form: a name of 1 to 40 characters and one of 8 colours.
-import { type ReactNode, useState } from "react";
+import { type ComponentRef, type ReactNode, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui";
@@ -28,6 +28,7 @@ export function HabitForm({
   const [error, setError] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const input = useRef<ComponentRef<typeof TextInput>>(null);
 
   const submit = async () => {
     if (saving) return;
@@ -47,10 +48,12 @@ export function HabitForm({
   return (
     <View style={styles.form}>
       <View style={styles.field}>
-        <Text nativeID="habit-name-label" style={[styles.label, { color: p.text }]}>
+        <Text nativeID="habit-name-label" onPress={() => input.current?.focus()} style={[styles.label, { color: p.text }]}>
           Name
         </Text>
         <TextInput
+          ref={input}
+          testID="habit-name"
           accessibilityLabel="Name"
           aria-labelledby="habit-name-label"
           value={name}
@@ -58,8 +61,6 @@ export function HabitForm({
           onChangeText={(text) => setName(text.slice(0, NAME_MAX))}
           onBlur={() => error && setError(nameError(name))}
           onSubmitEditing={submit}
-          placeholder="Drink water"
-          placeholderTextColor={p.muted}
           autoCapitalize="sentences"
           autoComplete="off"
           returnKeyType="done"

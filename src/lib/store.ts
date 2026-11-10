@@ -16,14 +16,15 @@ export type HabitList = { habits: Habit[]; ticks: Record<number, Day[]> };
 export const emptyList: HabitList = { habits: [], ticks: {} };
 export const defaultSettings: Settings = { theme: "system", guideDone: false };
 
-// Changes are announced, so every screen showing the data reads it again.
-const listeners = new Set<() => void>();
-export function onChange(listener: () => void): () => void {
+// Changes are announced, so every screen showing the data reads it again. `fresh` (the test
+// hooks) means the stored data was replaced: screens show their loading state while they read.
+const listeners = new Set<(fresh: boolean) => void>();
+export function onChange(listener: (fresh: boolean) => void): () => void {
   listeners.add(listener);
   return () => void listeners.delete(listener);
 }
-export function announce(): void {
-  for (const listener of listeners) listener();
+export function announce(fresh = false): void {
+  for (const listener of listeners) listener(fresh);
 }
 
 type HabitRow = { id: number; name: string; colour: number; position: number; created_on: string };
@@ -90,7 +91,7 @@ export async function addHabit(name: string, colour: number, createdOn: Day): Pr
   const clean = checkHabit(name, colour);
   const db = await open();
   let id = 0;
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     const max = await t.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
     writePoint();
     await t.run("INSERT INTO habits (name, colour, position, created_on) VALUES (?, ?, ?, ?);", clean, colour, (max[0]?.p ?? -1) + 1, createdOn);
@@ -104,7 +105,7 @@ export async function addHabit(name: string, colour: number, createdOn: Day): Pr
 export async function updateHabit(id: number, name: string, colour: number): Promise<void> {
   const clean = checkHabit(name, colour);
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     writePoint();
     await t.run("UPDATE habits SET name = ?, colour = ? WHERE id = ?;", clean, colour, id);
   });
@@ -114,7 +115,7 @@ export async function updateHabit(id: number, name: string, colour: number): Pro
 /** Removes the habit and all its ticks, together. */
 export async function deleteHabit(id: number): Promise<void> {
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     await t.run("DELETE FROM ticks WHERE habit_id = ?;", id);
     writePoint();
     await t.run("DELETE FROM habits WHERE id = ?;", id);
@@ -129,7 +130,7 @@ export async function deleteHabit(id: number): Promise<void> {
 export async function setTick(habitId: number, day: Day, ticked: boolean, todayDay: Day = today()): Promise<void> {
   if (!canTick(day, todayDay)) throw new RangeError("Only today and the 6 days before can be ticked");
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     writePoint();
     if (ticked) await t.run("INSERT OR IGNORE INTO ticks (habit_id, date) SELECT id, ? FROM habits WHERE id = ?;", day, habitId);
     else await t.run("DELETE FROM ticks WHERE habit_id = ? AND date = ?;", habitId, day);
@@ -140,7 +141,7 @@ export async function setTick(habitId: number, day: Day, ticked: boolean, todayD
 /** Saves a new list order: `ids` from first to last. */
 export async function reorder(ids: number[]): Promise<void> {
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     for (let i = 0; i < ids.length; i += 1) {
       await t.run("UPDATE habits SET position = ? WHERE id = ?;", i, ids[i]);
       if (i === 0) writePoint();
@@ -151,7 +152,7 @@ export async function reorder(ids: number[]): Promise<void> {
 
 export async function setTheme(theme: Theme): Promise<void> {
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     writePoint();
     await setKv(t, "theme", theme);
   });
@@ -160,7 +161,7 @@ export async function setTheme(theme: Theme): Promise<void> {
 
 export async function setGuideDone(done: boolean): Promise<void> {
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     writePoint();
     await setKv(t, "guideDone", done ? "1" : "0");
   });
@@ -170,7 +171,7 @@ export async function setGuideDone(done: boolean): Promise<void> {
 /** Removes every habit and tick, resets the theme to "System" and brings the guide back. */
 export async function deleteAll(): Promise<void> {
   const db = await open();
-  await db.tx(async (t) => {
+  await db.tx(async (t = db) => {
     await t.run("DELETE FROM ticks;");
     writePoint();
     await t.run("DELETE FROM habits;");

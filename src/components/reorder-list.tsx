@@ -66,7 +66,7 @@ export function ReorderList({
   };
 
   return (
-    <View style={styles.list}>
+    <View role="list" style={styles.list}>
       {ids.map((id) => (
         <Row
           key={id}
@@ -159,6 +159,7 @@ function Row({
   return (
     <View
       {...responder.panHandlers}
+      role="listitem"
       onTouchEnd={end}
       onTouchCancel={end}
       onLayout={(e) => onLayout(e.nativeEvent.layout)}

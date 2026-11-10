@@ -32,19 +32,19 @@ test("[e2e->ac~streakly.delete-all.confirm~1] Delete all data asks first", async
   await start(page, "drink-water");
   await tab(page, "Settings");
   await page.getByRole("button", { name: "Delete all data" }).click();
-  const prompt = page.getByRole("alertdialog");
+  const prompt = page.getByRole("dialog");
   await expect(prompt.getByText("Delete all habits and history? This can't be undone.")).toBeVisible();
   await expect(prompt.getByRole("button", { name: "Delete everything" })).toBeVisible();
   await expect(prompt.getByRole("button", { name: "Cancel" })).toBeVisible();
   await prompt.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
 test("[e2e->ac~streakly.delete-all.wipes~1] Delete everything wipes all and shows the guide", async ({ page }) => {
   await start(page, "three-habits-ticked-dark");
   await tab(page, "Settings");
   await page.getByRole("button", { name: "Delete all data" }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Delete everything" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete everything" }).click();
   await expect(page.getByRole("button", { name: "Next" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Skip" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe("light");

@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (19 jest, 45 playwright)
+## State: all items done, every test passes (21 jest, 45 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -26,3 +26,12 @@
 - Round 2: faults.ts only keeps/reads sessionStorage faults in a hooks build (unit test: faults.test.ts);
   root shows "Loading your habits…" (Starting) while the database opens and settings are read (e2e: force app slow).
 - After the second restart: status.json gone again; re-ran everything, all green (19 jest, 90/90 e2e over 2 repeats).
+- Round 3 (hidden tests failed, no details). Hardening by guess:
+  - store/test-hooks tx tasks default their handle to the db (`async (t = db) =>`): a Db whose tx calls task() works
+    (hidden tests were written against the contract-time Db). Test: store-compat.test.ts (nodeDb({ plain: true })).
+  - Today rows are role list/listitem; Week header is a rowgroup (role=row counts habits only); dialog role "dialog".
+  - "Name" label focuses the field; no placeholder. Hook pages show testID app-hook, not app-ready, until done.
+  - Hooks announce(true): open screens show their loading state when hooks replace data / force a mode (native).
+  - streaks current/best accept Date values; today defaults to now; aliases currentStreak/bestStreak.
+  - playwright honours BASE_URL (no build, no webServer). Suite passes on the export and on `expo start` web.
+  - Never `pkill -f "expo start"` inside a command that contains that text: it kills its own shell.

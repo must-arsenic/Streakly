@@ -29,7 +29,7 @@ export function AppProvider({ children }: { children: (state: AppState) => React
   }, []);
   useEffect(() => {
     load();
-    return onChange(load);
+    return onChange(() => load());
   }, [load]);
   const retry = useCallback(() => {
     setStatus("loading");
