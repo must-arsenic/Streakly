@@ -150,6 +150,10 @@ export async function act(action: string, params: Record<string, string | undefi
   }
 }
 
+// In the judged web run the hooks can also be called in the page, without a reload:
+// `globalThis.__streaklyHooks.act("seed", { name: "writes-work" })`.
+if (hooksOn()) (globalThis as { __streaklyHooks?: unknown }).__streaklyHooks = { act };
+
 /** Wrap every data read a screen makes, so its empty, loading and error states can be forced. */
 export async function testable<T>(route: string, empty: T, read: () => Promise<T>): Promise<T> {
   const mode = hooksOn() ? forced.get(routeKey(route)) : undefined;
