@@ -1,0 +1,20 @@
+[
+  {
+    "file": "app-icon.png",
+    "purpose": "Phone launcher app icon.",
+    "alt": "White woven ribbons rise across a violet background.",
+    "width": 1254,
+    "height": 1254,
+    "person": false,
+    "sha256": "603b7bf46ce4856552ee07c75cc5f9ae3458411cb4580cc0d83b53e1bebd346f"
+  },
+  {
+    "file": "logo-mark.png",
+    "purpose": "App branding on the first-run guide.",
+    "alt": "White woven ribbon mark on a transparent background.",
+    "width": 1254,
+    "height": 1254,
+    "person": false,
+    "sha256": "26f61f5d75e1b7fc575bde25b0c24561543ef2e0d30814aaa5e5a40f2958380c"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "build": ["pnpm install --frozen-lockfile", "pnpm lint", "pnpm typecheck", "pnpm export:web"],
+  "test": ["pnpm test"],
+  "junit": ["reports/jest.xml"],
+  "e2e": "pnpm e2e",
+  "e2eJunit": "reports/e2e.xml",
+  "port": 8081
+}

@@ -1,0 +1,209 @@
+<html data-theme="light"><head><style>/* spec: platform
+ *
+ * The app's design tokens: the only place a colour, a length or a font is written. Everything
+ * else styles with var(--…), and `npm run lint` refuses anything else. The contract task copies
+ * the confirmed look (DESIGN.md) into these values. Light by default, dark from the system or
+ * from the theme toggle (data-theme on <html>). Colours are OKLCH; text pairs are 4.5:1 or more,
+ * control borders 3:1 or more.
+ */
+
+:root {
+  color-scheme: light;
+
+  --color-bg: oklch(0.982 0.003 250);
+  --color-surface: oklch(1 0 0);
+  --color-surface-muted: oklch(0.966 0.005 250);
+  --color-border: oklch(0.925 0.006 250);
+  --color-border-strong: oklch(0.87 0.008 250);
+  --color-control-border: oklch(0.62 0.012 250);
+  --color-text: oklch(0.24 0.012 250);
+  --color-text-muted: oklch(0.52 0.014 250);
+  --color-accent: oklch(0.53 0.17 258);
+  --color-accent-hover: oklch(0.47 0.16 258);
+  --color-accent-text: oklch(1 0 0);
+  --color-accent-soft: oklch(0.955 0.025 258);
+  --color-accent-line: oklch(0.86 0.06 258);
+  --color-success: oklch(0.52 0.13 150);
+  --color-success-soft: oklch(0.955 0.03 150);
+  --color-info: var(--color-accent);
+  --color-info-soft: var(--color-accent-soft);
+  --color-warning: oklch(0.5 0.11 70);
+  --color-warning-soft: oklch(0.96 0.05 85);
+  --color-danger: oklch(0.547 0.187 22.1);
+  --color-danger-hover: oklch(0.49 0.18 22.1);
+  --color-danger-soft: oklch(0.957 0.019 9.3);
+  --color-focus: var(--color-accent);
+  --color-backdrop: oklch(0.2 0.01 250 / 0.4);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --text-caption: 0.75rem;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-headline: 1.125rem;
+  --text-title: 1.5rem;
+  --text-display: 2rem;
+  --leading-tight: 1.25;
+  --leading-body: 1.5;
+  --weight-body: 400;
+  --weight-medium: 500;
+  --weight-strong: 600;
+  --weight-bold: 700;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --border-width: 1px;
+  --focus-width: 2px;
+  --radius-control: 8px;
+  --radius-surface: 12px;
+  --radius-pill: 999px;
+  --control-height-sm: 2rem;
+  --control-height-md: 2.5rem;
+  --content-width: 64rem;
+  --header-height: 3.5rem;
+  --dot-size: 6px;
+  --size-badge: 1.375rem;
+  --size-dialog: 32rem;
+  --size-textarea: 5rem;
+  --size-state: 28rem;
+
+  --motion-duration-micro: 120ms;
+  --motion-duration-small: 200ms;
+  --motion-duration-surface: 300ms;
+  --motion-easing-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --motion-easing-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-bg: oklch(0.18 0.01 250);
+    --color-surface: oklch(0.215 0.012 250);
+    --color-surface-muted: oklch(0.245 0.014 250);
+    --color-border: oklch(0.3 0.015 250);
+    --color-border-strong: oklch(0.37 0.018 250);
+    --color-control-border: oklch(0.55 0.018 250);
+    --color-text: oklch(0.95 0.005 250);
+    --color-text-muted: oklch(0.72 0.015 250);
+    --color-accent: oklch(0.72 0.14 255);
+    --color-accent-hover: oklch(0.79 0.12 255);
+    --color-accent-text: oklch(0.18 0.03 255);
+    --color-accent-soft: oklch(0.29 0.05 255);
+    --color-accent-line: oklch(0.42 0.08 255);
+    --color-success: oklch(0.72 0.14 150);
+    --color-success-soft: oklch(0.28 0.045 150);
+    --color-warning: oklch(0.8 0.12 85);
+    --color-warning-soft: oklch(0.31 0.05 85);
+    --color-danger: oklch(0.713 0.148 16.4);
+    --color-danger-hover: oklch(0.78 0.13 16.4);
+    --color-danger-soft: oklch(0.265 0.051 13.2);
+    --color-backdrop: oklch(0.05 0 0 / 0.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: oklch(0.18 0.01 250);
+  --color-surface: oklch(0.215 0.012 250);
+  --color-surface-muted: oklch(0.245 0.014 250);
+  --color-border: oklch(0.3 0.015 250);
+  --color-border-strong: oklch(0.37 0.018 250);
+  --color-control-border: oklch(0.55 0.018 250);
+  --color-text: oklch(0.95 0.005 250);
+  --color-text-muted: oklch(0.72 0.015 250);
+  --color-accent: oklch(0.72 0.14 255);
+  --color-accent-hover: oklch(0.79 0.12 255);
+  --color-accent-text: oklch(0.18 0.03 255);
+  --color-accent-soft: oklch(0.29 0.05 255);
+  --color-accent-line: oklch(0.42 0.08 255);
+  --color-success: oklch(0.72 0.14 150);
+  --color-success-soft: oklch(0.28 0.045 150);
+  --color-warning: oklch(0.8 0.12 85);
+  --color-warning-soft: oklch(0.31 0.05 85);
+  --color-danger: oklch(0.713 0.148 16.4);
+  --color-danger-hover: oklch(0.78 0.13 16.4);
+  --color-danger-soft: oklch(0.265 0.051 13.2);
+  --color-backdrop: oklch(0.05 0 0 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-micro: 0ms;
+    --motion-duration-small: 0ms;
+    --motion-duration-surface: 0ms;
+  }
+}
+</style><style>:root {
+  --color-bg: oklch(0.975 0.006 280);
+  --color-surface: oklch(1 0 0);
+  --color-surface-muted: oklch(0.955 0.01 280);
+  --color-border: oklch(0.91 0.01 280);
+  --color-border-strong: oklch(0.85 0.014 280);
+  --color-control-border: oklch(0.6 0.02 280);
+  --color-text: oklch(0.22 0.02 280);
+  --color-text-muted: oklch(0.5 0.02 280);
+  --color-accent: oklch(0.5 0.19 275);
+  --color-accent-hover: oklch(0.44 0.18 275);
+  --color-accent-text: oklch(1 0 0);
+  --color-accent-soft: oklch(0.95 0.03 275);
+  --color-accent-line: oklch(0.85 0.07 275);
+  --radius-control: 10px;
+  --radius-surface: 16px;
+}
+:root[data-theme="dark"] {
+  --color-bg: oklch(0.17 0.015 280);
+  --color-surface: oklch(0.21 0.017 280);
+  --color-surface-muted: oklch(0.25 0.019 280);
+  --color-border: oklch(0.3 0.02 280);
+  --color-border-strong: oklch(0.37 0.022 280);
+  --color-control-border: oklch(0.56 0.022 280);
+  --color-text: oklch(0.95 0.006 280);
+  --color-text-muted: oklch(0.73 0.018 280);
+  --color-accent: oklch(0.74 0.13 275);
+  --color-accent-hover: oklch(0.8 0.11 275);
+  --color-accent-text: oklch(0.18 0.04 275);
+  --color-accent-soft: oklch(0.29 0.06 275);
+  --color-accent-line: oklch(0.43 0.09 275);
+}</style><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--color-bg);color:var(--color-text);font-family:var(--font-sans);font-size:var(--text-body);line-height:var(--leading-body)}
+.phone{width:375px;height:812px;margin:0 auto;position:relative;display:flex;flex-direction:column;overflow:hidden;background:var(--color-bg)}
+header{padding:var(--space-7) var(--space-5) var(--space-4)}
+.date{font-size:var(--text-small);color:var(--color-text-muted);font-weight:var(--weight-medium)}
+h1{font-size:var(--text-display);line-height:var(--leading-tight);font-weight:var(--weight-bold)}
+.sum{margin-top:var(--space-1);font-size:var(--text-small);color:var(--color-text-muted)}
+.list{flex:1;padding:0 var(--space-4);display:flex;flex-direction:column;gap:var(--space-2)}
+.row{display:flex;align-items:center;gap:var(--space-3);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-surface);padding:var(--space-3) var(--space-3) var(--space-3) var(--space-3);min-height:76px}
+.bar{width:4px;align-self:stretch;border-radius:var(--radius-pill);background:var(--h)}
+.txt{flex:1;min-width:0}
+.name{font-weight:var(--weight-strong);font-size:var(--text-headline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:var(--leading-tight)}
+.meta{font-size:var(--text-small);color:var(--color-text-muted);margin-top:var(--space-1)}
+.meta b{color:var(--color-text);font-weight:var(--weight-strong)}
+.box{width:48px;height:48px;border-radius:var(--radius-control);border:2px solid var(--color-control-border);display:grid;place-items:center;flex:none;background:var(--color-surface)}
+.box.on{background:var(--h);border-color:var(--h)}
+.box svg{width:28px;height:28px;fill:none;stroke:var(--color-accent-text);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.c1{--h:var(--color-accent)}.c2{--h:var(--color-success)}.c3{--h:var(--color-warning)}.c4{--h:var(--color-danger)}.c5{--h:var(--color-text-muted)}
+.fab{position:absolute;right:var(--space-5);bottom:96px;width:56px;height:56px;border-radius:var(--radius-pill);background:var(--color-accent);display:grid;place-items:center;box-shadow:0 6px 16px var(--color-backdrop)}
+.fab svg{width:26px;height:26px;stroke:var(--color-accent-text);stroke-width:2.5;stroke-linecap:round;fill:none}
+nav{height:72px;display:flex;border-top:var(--border-width) solid var(--color-border);background:var(--color-surface);padding-bottom:var(--space-2)}
+nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--text-caption);font-weight:var(--weight-medium);color:var(--color-text-muted);text-decoration:none}
+nav a.cur{color:var(--color-accent)}
+nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style></head><body><div class="phone">
+<header><div class="date">Tuesday 10 November</div><h1>Today</h1><div class="sum">3 of 5 ticked</div></header>
+<main class="list">
+<div class="row c1"><span class="bar"></span><div class="txt"><div class="name">Drink water</div><div class="meta"><b>12-day streak</b> · Best: 21</div></div><span class="box on" role="checkbox" aria-checked="true"><svg viewBox="0 0 24 24"><polyline points="5 12.5 10 17.5 19 7"/></svg></span></div>
+<div class="row c2"><span class="bar"></span><div class="txt"><div class="name">Read for 20 minutes</div><div class="meta"><b>5-day streak</b> · Best: 9</div></div><span class="box on" role="checkbox" aria-checked="true"><svg viewBox="0 0 24 24"><polyline points="5 12.5 10 17.5 19 7"/></svg></span></div>
+<div class="row c3"><span class="bar"></span><div class="txt"><div class="name">Stretch</div><div class="meta"><b>3-day streak</b> · Best: 14</div></div><span class="box" role="checkbox" aria-checked="false"></span></div>
+<div class="row c4"><span class="bar"></span><div class="txt"><div class="name">Meditate 10 minutes</div><div class="meta"><b>1-day streak</b> · Best: 6</div></div><span class="box on" role="checkbox" aria-checked="true"><svg viewBox="0 0 24 24"><polyline points="5 12.5 10 17.5 19 7"/></svg></span></div>
+<div class="row c5"><span class="bar"></span><div class="txt"><div class="name">Walk after lunch</div><div class="meta"><b>0-day streak</b> · Best: 4</div></div><span class="box" role="checkbox" aria-checked="false"></span></div>
+</main>
+<span class="fab" aria-label="Add habit"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+<nav><a class="cur"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="8 12.5 11 15.5 16 9"/></svg>Today</a><a><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/><line x1="15" y1="10" x2="15" y2="20"/></svg>Week</a><a><svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.5"/><circle cx="15" cy="17" r="2.5"/></svg>Settings</a></nav>
+</div></body></html>
