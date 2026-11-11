@@ -3,7 +3,8 @@
 // set them, and only a build with the hooks on keeps them in sessionStorage (on the web, so a page
 // reload keeps them) or reads them back from it.
 
-type Faults = { writes: boolean; readsOnce: number };
+/** `readsFail`: loads of the habit list fail until the person taps "Try again". */
+type Faults = { writes: boolean; readsFail: boolean };
 
 const KEY = "streakly.faults";
 const hooksBuild = process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS === "1";
@@ -18,14 +19,14 @@ function storage(): Storage | undefined {
 }
 
 function load(): Faults {
-  if (!hooksBuild) return { writes: false, readsOnce: 0 };
+  if (!hooksBuild) return { writes: false, readsFail: false };
   try {
     const raw = storage()?.getItem(KEY);
-    if (raw) return { writes: false, readsOnce: 0, ...JSON.parse(raw) };
+    if (raw) return { writes: false, readsFail: false, ...JSON.parse(raw) };
   } catch {
     // no saved faults
   }
-  return { writes: false, readsOnce: 0 };
+  return { writes: false, readsFail: false };
 }
 
 function save(): void {
@@ -42,14 +43,19 @@ export function setWritesFail(on: boolean): void {
   save();
 }
 
-/** The next `n` loads of the habit list fail. */
-export function failNextReads(n: number): void {
-  faults = { ...faults, readsOnce: n };
+/** Loads of the habit list fail (`on`) until a retry: see `retried`. */
+export function setReadsFail(on: boolean): void {
+  faults = { ...faults, readsFail: on };
   save();
 }
 
+/** The person tapped "Try again" after a load error: storage reads again. */
+export function retried(): void {
+  if (faults.readsFail) setReadsFail(false);
+}
+
 export function clearFaults(): void {
-  faults = { writes: false, readsOnce: 0 };
+  faults = { writes: false, readsFail: false };
   save();
 }
 
@@ -60,9 +66,5 @@ export function writePoint(): void {
 
 /** Called before every load of the habit list. */
 export function readPoint(): void {
-  if (faults.readsOnce > 0) {
-    faults = { ...faults, readsOnce: faults.readsOnce - 1 };
-    save();
-    throw new Error("Storage read failed");
-  }
+  if (faults.readsFail) throw new Error("Storage read failed");
 }

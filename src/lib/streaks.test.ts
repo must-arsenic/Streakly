@@ -32,3 +32,10 @@ test("streaks take Date values and default today to now", () => {
   expect(current([at(1), at(2)], now)).toBe(2);
   expect(best([at(5), at(4), at(1)])).toBe(2);
 });
+
+test("streaks over date-only Date values", () => {
+  const d = (s: string) => new Date(s);
+  expect(current([d("2026-11-10"), d("2026-11-09"), d("2026-11-08")], d("2026-11-10"))).toBe(3);
+  expect(current(["2026-11-08", "2026-11-07"], d("2026-11-10"))).toBe(0);
+  expect(current(["2026-11-09", "2026-11-08", "2026-11-07", "2026-11-06"], d("2026-11-10"))).toBe(4);
+});

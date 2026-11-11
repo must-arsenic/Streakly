@@ -48,6 +48,7 @@ test("[e2e->ac~streakly.tick-week.untick~1] unticking a past day removes its tic
 
 test("[e2e->ac~streakly.streak-current.label~1] a 5-day streak shows on Today", async ({ page }) => {
   await start(page, "water-streak-5");
+  await expect(page.getByRole("row", { name: "Water" }).getByText("5-day streak")).toBeVisible();
   await expect(page.getByTestId(/^habit-row-/).getByText("5-day streak", { exact: true })).toBeVisible();
 });
 

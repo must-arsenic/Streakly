@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { emptyList, type Habit, type HabitList, loadHabit, loadList, onChange } from "./store";
-import { testable } from "./test-hooks";
+import { retryRead, testable } from "./test-hooks";
 
 export type Loaded<T> = { state: "loading" } | { state: "error" } | { state: "ready"; data: T };
 
-function useRead<T>(read: () => Promise<T>, deps: unknown[]): [Loaded<T>, () => void] {
+function useRead<T>(route: string, read: () => Promise<T>, deps: unknown[]): [Loaded<T>, () => void] {
   const [loaded, setLoaded] = useState<Loaded<T>>({ state: "loading" });
   const run = useRef(0);
   const load = useCallback((showLoading: boolean) => {
@@ -23,16 +23,19 @@ function useRead<T>(read: () => Promise<T>, deps: unknown[]): [Loaded<T>, () => 
     load(true);
     return onChange((fresh) => load(fresh));
   }, [load]);
-  const retry = useCallback(() => load(true), [load]);
+  const retry = useCallback(() => {
+    retryRead(route);
+    load(true);
+  }, [load, route]);
   return [loaded, retry];
 }
 
 /** The habit list for a screen ("/" or "/week"). */
 export function useHabitList(route: string): [Loaded<HabitList>, () => void] {
-  return useRead(() => testable(route, emptyList, loadList), [route]);
+  return useRead(route, () => testable(route, emptyList, loadList), [route]);
 }
 
 /** One habit, for Edit habit. */
 export function useHabit(id: number): [Loaded<Habit | null>, () => void] {
-  return useRead(() => testable("/habits/[id]", null, () => loadHabit(id)), [id]);
+  return useRead("/habits/[id]", () => testable("/habits/[id]", null, () => loadHabit(id)), [id]);
 }

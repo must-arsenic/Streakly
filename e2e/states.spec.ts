@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { act, hook, start, tab } from "./helpers";
+import { hook, start, tab } from "./helpers";
 
 test("[e2e->ac~streakly.first-run.shows~1] the first open shows guide card 1 of 3", async ({ page }) => {
   await hook(page, "reset");
@@ -41,6 +41,7 @@ test("[e2e->ac~streakly.states.empty-week~1] Week with no habits", async ({ page
   await tab(page, "Week");
   await expect(page.getByText("No habits yet")).toBeVisible();
   await expect(page.getByRole("button", { name: "Add a habit" })).toBeVisible();
+  await expect(page.getByText("Add a habit")).toHaveCount(1);
 });
 
 test("[e2e->ac~streakly.states.loading~1] Loading shows while stored data is read", async ({ page }) => {
@@ -77,11 +78,8 @@ test("[e2e->ac~streakly.states.error~1] unreadable settings show the load error,
   await expect(page.getByText("Couldn't load your habits")).toBeVisible();
   await expect(page.getByRole("button", { name: "Skip" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
-  // Try again while still unreadable: the error stays
+  // storage reads again: Try again shows Today, not the guide
   await page.getByRole("button", { name: "Try again" }).click();
-  await expect(page.getByText("Couldn't load your habits")).toBeVisible();
-  // once storage reads again (the hook announces the change, so the app reads it again) Today shows
-  await act(page, "seed", { name: "reads-work" });
   await expect(page.getByRole("link", { name: "Water" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Skip" })).toHaveCount(0);
 });
@@ -91,8 +89,21 @@ test("[e2e->ac~streakly.states.retry~1] Try again after a load error lists the h
   await hook(page, "seed?name=two-habits");
   await hook(page, "seed?name=load-fails-once");
   await expect(page.getByText("Couldn't load your habits")).toBeVisible();
+  // opening the app again still fails, until Try again
+  await page.goto("/");
+  await expect(page.getByText("Couldn't load your habits")).toBeVisible();
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByRole("link", { name: "Water" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read" })).toBeVisible();
+  await expect(page.getByRole("row")).toHaveCount(2);
   await expect(page.getByText("Couldn't load your habits")).toHaveCount(0);
+});
+
+test("[e2e->ac~streakly.states.retry~1] Try again after a forced load error lists the habits", async ({ page }) => {
+  await start(page, "two-habits");
+  await hook(page, "force?route=/&mode=error");
+  await page.goto("/");
+  await expect(page.getByText("Couldn't load your habits")).toBeVisible();
+  await page.getByRole("button", { name: "Try again" }).click();
+  await expect(page.getByRole("row")).toHaveCount(2);
 });

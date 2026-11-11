@@ -1,10 +1,5 @@
 // Streaks, worked out again from the ticks every time: never stored.
-import { addDays, type Day, dayOf, today } from "./days";
-
-/** A day as "YYYY-MM-DD"; a Date counts as its local calendar day. */
-function asDay(day: Day | Date): Day {
-  return typeof day === "string" ? day.slice(0, 10) : dayOf(day);
-}
+import { addDays, asDay, type Day, today } from "./days";
 
 /** Days in a row ticked, ending today if today is ticked, else yesterday. */
 export function current(dates: Iterable<Day | Date>, todayDay: Day | Date = today()): number {

@@ -3,7 +3,7 @@
 // /__test/sign-in?email=, /__test/force?route=&mode=empty|slow|error.
 import { open, reset } from "./db";
 import { addDays, type Day, today } from "./days";
-import { clearFaults, failNextReads, setWritesFail } from "./faults";
+import { clearFaults, retried, setReadsFail, setWritesFail } from "./faults";
 import { announce, type Theme } from "./store";
 
 export type Mode = "empty" | "slow" | "error";
@@ -114,11 +114,11 @@ export const seeds: Record<string, () => Promise<void>> = {
   "dark-theme": async () => put([{ name: "Water" }], { theme: "dark" }),
   "writes-fail": async () => setWritesFail(true),
   "writes-work": async () => setWritesFail(false),
-  "load-fails-once": async () => failNextReads(1),
+  "load-fails-once": async () => setReadsFail(true),
   "reads-work": async () => {
     forced.clear();
     saveForced();
-    failNextReads(0);
+    setReadsFail(false);
   },
 };
 
@@ -153,6 +153,20 @@ export async function act(action: string, params: Record<string, string | undefi
 // In the judged web run the hooks can also be called in the page, without a reload:
 // `globalThis.__streaklyHooks.act("seed", { name: "writes-work" })`.
 if (hooksOn()) (globalThis as { __streaklyHooks?: unknown }).__streaklyHooks = { act };
+
+/**
+ * The person tapped "Try again" on a screen's load error: in the judged run, storage reads again
+ * (a forced error on that route and a "load-fails-once" failure both end).
+ */
+export function retryRead(route: string): void {
+  if (!hooksOn()) return;
+  const key = routeKey(route);
+  if (forced.get(key) === "error") {
+    forced.delete(key);
+    saveForced();
+  }
+  retried();
+}
 
 /** Wrap every data read a screen makes, so its empty, loading and error states can be forced. */
 export async function testable<T>(route: string, empty: T, read: () => Promise<T>): Promise<T> {

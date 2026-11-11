@@ -20,6 +20,6 @@
   { "name": "dark-theme", "what": "Guide finished, theme \"Dark\", one habit \"Water\" with no ticks." },
   { "name": "writes-fail", "what": "Adds nothing: from now on every save to storage fails (load it after a data seed). Reset or \"writes-work\" ends it." },
   { "name": "writes-work", "what": "Adds nothing: saves to storage work again after \"writes-fail\"." },
-  { "name": "load-fails-once", "what": "Adds nothing: the next load of the habit list (Today or Week) fails, then loads work again, so \"Try again\" shows the stored habits. Load it after a data seed, e.g. \"two-habits\"." },
-  { "name": "reads-work", "what": "Adds nothing: clears forced empty/slow/error states and read failures, so loads read storage again." }
+  { "name": "load-fails-once", "what": "Adds nothing: from now on loads of the habit list (Today and Week) fail, until the person taps \"Try again\" on the load error; then loads work again and Today lists the stored habits. Load it after a data seed, e.g. \"two-habits\"." },
+  { "name": "reads-work", "what": "Adds nothing: clears forced empty/slow/error states and read failures, so loads read storage again. (\"Try again\" on a load error also ends a forced error on that screen.)" }
 ]

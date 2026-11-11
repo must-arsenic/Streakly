@@ -15,10 +15,13 @@ export function ReorderList({
   ids,
   onMove,
   renderRow,
+  labelOf,
 }: {
   ids: number[];
   onMove: (ids: number[]) => void;
   renderRow: (id: number, state: { lifted: boolean }) => ReactNode;
+  /** Each row's name for screen readers: the habit's name. */
+  labelOf: (id: number) => string;
 }) {
   const layouts = useRef(new Map<number, LayoutRectangle>());
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -66,7 +69,7 @@ export function ReorderList({
   };
 
   return (
-    <View role="list" style={styles.list}>
+    <View role="table" aria-label="Today's habits" style={styles.list}>
       {ids.map((id) => (
         <Row
           key={id}
@@ -79,6 +82,7 @@ export function ReorderList({
             if (next.join() !== idsRef.current.join()) onMoveRef.current(next);
           }}
           onAction={(by) => move(id, by)}
+          label={labelOf(id)}
         >
           {renderRow(id, { lifted: drag?.id === id })}
         </Row>
@@ -94,6 +98,7 @@ function Row({
   onLayout,
   onDrop,
   onAction,
+  label,
   children,
 }: {
   id: number;
@@ -102,6 +107,7 @@ function Row({
   onLayout: (l: LayoutRectangle) => void;
   onDrop: (dy: number) => void;
   onAction: (by: number) => void;
+  label: string;
   children: ReactNode;
 }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -159,7 +165,8 @@ function Row({
   return (
     <View
       {...responder.panHandlers}
-      role="listitem"
+      role="row"
+      aria-label={label}
       onTouchEnd={end}
       onTouchCancel={end}
       onLayout={(e) => onLayout(e.nativeEvent.layout)}

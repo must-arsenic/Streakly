@@ -55,13 +55,39 @@ export function Button({
   );
 }
 
-/** One centred column, capped at the content width. */
-export function Page({ children, scroll = true, style }: { children: ReactNode; scroll?: boolean; style?: ViewStyle }) {
+/**
+ * One centred column, capped at the content width. `behind`: a prompt is open over it, so screen
+ * readers (and tests that find things by role) only see the prompt.
+ */
+export function Page({
+  children,
+  scroll = true,
+  style,
+  behind = false,
+}: {
+  children: ReactNode;
+  scroll?: boolean;
+  style?: ViewStyle;
+  behind?: boolean;
+}) {
   const p = usePalette();
-  const inner = <View style={[styles.column, style]}>{children}</View>;
+  const inner = (
+    <View
+      style={[styles.column, style]}
+      aria-hidden={behind || undefined}
+      importantForAccessibility={behind ? "no-hide-descendants" : "auto"}
+      accessibilityElementsHidden={behind}
+    >
+      {children}
+    </View>
+  );
   if (!scroll) return <View style={[styles.page, { backgroundColor: p.bg }]}>{inner}</View>;
   return (
-    <ScrollView style={[styles.page, { backgroundColor: p.bg }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={[styles.page, { backgroundColor: p.bg }]}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
       {inner}
     </ScrollView>
   );
@@ -142,7 +168,13 @@ export function Confirm({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={[styles.backdrop, { backgroundColor: p.backdrop }]}>
-        <View role="dialog" aria-modal accessibilityViewIsModal aria-label={message} style={[styles.dialog, { backgroundColor: p.surface, borderColor: p.border }]}>
+        <View
+          role="dialog"
+          aria-modal
+          accessibilityViewIsModal
+          aria-label={message}
+          style={[styles.dialog, { backgroundColor: p.surface, borderColor: p.border }]}
+        >
           <Text style={[styles.dialogText, { color: p.text }]}>{message}</Text>
           <View style={styles.dialogButtons}>
             <Button label="Cancel" kind="secondary" onPress={onCancel} disabled={busy} />
@@ -169,11 +201,24 @@ const styles = StyleSheet.create({
   buttonText: { fontSize: tokens.type.body, fontWeight: "600", textAlign: "center" },
   page: { flex: 1 },
   scrollContent: { flexGrow: 1 },
-  column: { width: "100%", maxWidth: tokens.size.content, alignSelf: "center", paddingHorizontal: tokens.space.lg, paddingBottom: tokens.space.xxxl * 2, flexGrow: 1 },
+  column: {
+    width: "100%",
+    maxWidth: tokens.size.content,
+    alignSelf: "center",
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.xxxl * 2,
+    flexGrow: 1,
+  },
   header: { paddingBottom: tokens.space.lg, paddingHorizontal: tokens.space.xs },
   over: { fontSize: tokens.type.small, fontWeight: "500" },
   title: { fontSize: tokens.type.display, fontWeight: "700" },
-  state: { alignItems: "center", justifyContent: "center", gap: tokens.space.md, paddingVertical: tokens.space.xxxl, paddingHorizontal: tokens.space.lg },
+  state: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.space.md,
+    paddingVertical: tokens.space.xxxl,
+    paddingHorizontal: tokens.space.lg,
+  },
   stateTitle: { fontSize: tokens.type.headline, fontWeight: "600", textAlign: "center" },
   stateText: { fontSize: tokens.type.body, textAlign: "center" },
   banner: {
@@ -189,7 +234,14 @@ const styles = StyleSheet.create({
   },
   bannerText: { fontSize: tokens.type.body, fontWeight: "600", flexShrink: 1 },
   backdrop: { flex: 1, alignItems: "center", justifyContent: "center", padding: tokens.space.lg },
-  dialog: { width: "100%", maxWidth: tokens.size.dialog, borderRadius: tokens.radius.surface, borderWidth: tokens.size.border, padding: tokens.space.xl, gap: tokens.space.xl },
+  dialog: {
+    width: "100%",
+    maxWidth: tokens.size.dialog,
+    borderRadius: tokens.radius.surface,
+    borderWidth: tokens.size.border,
+    padding: tokens.space.xl,
+    gap: tokens.space.xl,
+  },
   dialogText: { fontSize: tokens.type.headline, fontWeight: "600" },
   dialogButtons: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: tokens.space.sm },
 });

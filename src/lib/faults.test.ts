@@ -19,7 +19,7 @@ afterEach(() => {
 
 test("faults left in sessionStorage do nothing in the person's app", () => {
   delete process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS;
-  withSession(JSON.stringify({ writes: true, readsOnce: 1 }));
+  withSession(JSON.stringify({ writes: true, readsFail: true }));
   jest.isolateModules(() => {
     const { readPoint, writePoint } = jest.requireActual<typeof import("./faults")>("./faults");
     expect(() => writePoint()).not.toThrow();
@@ -29,7 +29,7 @@ test("faults left in sessionStorage do nothing in the person's app", () => {
 
 test("faults kept in sessionStorage come back in a build with the test hooks on", () => {
   process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS = "1";
-  withSession(JSON.stringify({ writes: true, readsOnce: 0 }));
+  withSession(JSON.stringify({ writes: true, readsFail: false }));
   jest.isolateModules(() => {
     const { writePoint } = jest.requireActual<typeof import("./faults")>("./faults");
     expect(() => writePoint()).toThrow("Storage write failed");

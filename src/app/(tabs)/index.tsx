@@ -38,6 +38,7 @@ export default function Today() {
       <ReorderList
         ids={habits.map((h) => h.id)}
         onMove={(ids) => void saver.save(() => reorder(ids))}
+        labelOf={(id) => byId.get(id)?.name ?? ""}
         renderRow={(id, { lifted }) => {
           const habit = byId.get(id) as Habit;
           const dates = ticks[id] ?? [];

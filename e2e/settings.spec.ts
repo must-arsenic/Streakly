@@ -36,6 +36,7 @@ test("[e2e->ac~streakly.delete-all.confirm~1] Delete all data asks first", async
   await expect(prompt.getByText("Delete all habits and history? This can't be undone.")).toBeVisible();
   await expect(prompt.getByRole("button", { name: "Delete everything" })).toBeVisible();
   await expect(prompt.getByRole("button", { name: "Cancel" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(1);
   await prompt.getByRole("button", { name: "Cancel" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });

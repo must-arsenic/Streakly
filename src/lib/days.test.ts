@@ -79,3 +79,15 @@ test("[utest->ac~streakly.no-out-of-range-ticks.refused~1] a tick is checked aga
   await setTick(id, now, true);
   expect((await loadList()).ticks[id]).toEqual([now]);
 });
+
+test("a date-only Date is the same day in every time zone", () => {
+  const { spawnSync } = jest.requireActual<{ spawnSync: (cmd: string, args: string[], o: object) => { stdout: { toString(): string } } }>("node:child_process");
+  const { resolve } = jest.requireActual<{ resolve: (...p: string[]) => string }>("node:path");
+  const days = resolve(process.cwd(), "src/lib/days.ts");
+  const script = `import { asDay, addDays, lastSeven } from ${JSON.stringify(days)};
+    console.log(JSON.stringify([asDay(new Date("2026-11-10")), addDays(new Date("2026-11-10"), -1), lastSeven(new Date("2026-11-10"))[6], asDay(new Date(2026, 10, 10, 23, 30))]));`;
+  for (const tz of ["America/Los_Angeles", "Asia/Tokyo", "UTC"]) {
+    const out = spawnSync(process.execPath, ["--input-type=module", "-e", script], { env: { ...process.env, TZ: tz } });
+    expect([tz, ...JSON.parse(out.stdout.toString())]).toEqual([tz, "2026-11-10", "2026-11-09", "2026-11-10", "2026-11-10"]);
+  }
+});

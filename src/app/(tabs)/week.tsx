@@ -27,7 +27,7 @@ export default function Week() {
   if (list.state === "loading") body = <Loading />;
   else if (list.state === "error") body = <LoadError onRetry={retryLoad} />;
   else if (list.data.habits.length === 0)
-    body = <Empty onAdd={() => router.push("/habits/new")} what="Add a habit, and each of the last 7 days shows here." />;
+    body = <Empty onAdd={() => router.push("/habits/new")} what="Each habit you keep gets a row here, with a box for each of the last 7 days." />;
   else {
     const { habits, ticks } = list.data;
     body = (

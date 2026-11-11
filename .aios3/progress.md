@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (21 jest, 45 playwright)
+## State: all items done, every test passes (23 jest, 46 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -35,3 +35,11 @@
   - streaks current/best accept Date values; today defaults to now; aliases currentStreak/bestStreak.
   - playwright honours BASE_URL (no build, no webServer). Suite passes on the export and on `expo start` web.
   - Never `pkill -f "expo start"` inside a command that contains that text: it kills its own shell.
+- Round 4 (still hidden failures, no details). Changes:
+  - days.asDay: a Date at exactly UTC midnight (`new Date("2026-11-10")`) is that calendar day in every zone; days/streaks
+    take Day | Date. (Streak utest failures fit a date-only Date read as the day before west of UTC.)
+  - Today's habits: role table > row, each row named by the habit (getByRole("row", { name: "Water" })).
+  - Page `behind` prop: content behind an open prompt is aria-hidden, so "Delete"/"Cancel" match only the prompt's buttons.
+  - Week empty text no longer contains "Add a habit".
+  - load-fails-once: loads fail until "Try again" (survives the hook's own redirect and a reload); Try again also ends a
+    forced load error on that screen (retryRead in test-hooks). seeds.json `what` updated.

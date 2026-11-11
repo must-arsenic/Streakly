@@ -3,7 +3,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useR
 
 import type { Day } from "./days";
 import { defaultSettings, loadSettings, onChange, type Settings } from "./store";
-import { testable } from "./test-hooks";
+import { retryRead, testable } from "./test-hooks";
 import { useToday } from "./use-today";
 
 /** "error" only when the settings were never read: a failed re-read keeps the last ones. */
@@ -32,6 +32,7 @@ export function AppProvider({ children }: { children: (state: AppState) => React
     return onChange(() => load());
   }, [load]);
   const retry = useCallback(() => {
+    retryRead("app");
     setStatus("loading");
     load();
   }, [load]);

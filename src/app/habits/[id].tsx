@@ -20,8 +20,18 @@ export default function EditHabit() {
   const [asking, setAsking] = useState(false);
   const close = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
-  if (habit.state === "loading") return <Page><Loading label="Loading your habit…" /></Page>;
-  if (habit.state === "error") return <Page><LoadError onRetry={retry} label="Couldn't load your habit" /></Page>;
+  if (habit.state === "loading")
+    return (
+      <Page>
+        <Loading label="Loading your habit…" />
+      </Page>
+    );
+  if (habit.state === "error")
+    return (
+      <Page>
+        <LoadError onRetry={retry} label="Couldn't load your habit" />
+      </Page>
+    );
   const h = habit.data;
   if (!h)
     return (
@@ -34,22 +44,28 @@ export default function EditHabit() {
     );
 
   return (
-    <Page>
-      {saver.failed ? <View style={styles.banner}><SaveError onRetry={saver.retry} busy={saver.busy} /></View> : null}
-      <HabitForm
-        key={h.id}
-        initialName={h.name}
-        initialColour={h.colour}
-        onCancel={close}
-        onSave={async (name, colour) => {
-          await updateHabit(h.id, name, colour);
-          close();
-        }}
-      >
-        <View style={[styles.danger, { borderColor: p.border }]}>
-          <Button label="Delete habit" kind="ghost" onPress={() => setAsking(true)} />
-        </View>
-      </HabitForm>
+    <>
+      <Page behind={asking}>
+        {saver.failed ? (
+          <View style={styles.banner}>
+            <SaveError onRetry={saver.retry} busy={saver.busy} />
+          </View>
+        ) : null}
+        <HabitForm
+          key={h.id}
+          initialName={h.name}
+          initialColour={h.colour}
+          onCancel={close}
+          onSave={async (name, colour) => {
+            await updateHabit(h.id, name, colour);
+            close();
+          }}
+        >
+          <View style={[styles.danger, { borderColor: p.border }]}>
+            <Button label="Delete habit" kind="ghost" onPress={() => setAsking(true)} />
+          </View>
+        </HabitForm>
+      </Page>
       <Confirm
         visible={asking}
         message="Delete this habit and all its history?"
@@ -64,7 +80,7 @@ export default function EditHabit() {
           if (!done) setAsking(false);
         }}
       />
-    </Page>
+    </>
   );
 }
 
