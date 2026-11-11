@@ -1,46 +1,39 @@
 import { afterEach, expect, jest, test } from "@jest/globals";
 
-const KEY = "streakly.faults";
-const original = process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS;
-
-function withSession(value: string): void {
-  const store = new Map([[KEY, value]]);
-  (globalThis as { sessionStorage?: unknown }).sessionStorage = {
-    getItem: (k: string) => store.get(k) ?? null,
-    setItem: (k: string, v: string) => store.set(k, v),
-  };
-}
+import { clearFaults, failNextReads, faultState, persistWith, readPoint, restoreFaults, setWritesFail, writePoint } from "./faults";
 
 afterEach(() => {
+  persistWith(null);
+  clearFaults();
+});
+
+test("faults are off unless set: sessionStorage is never read", () => {
+  (globalThis as { sessionStorage?: unknown }).sessionStorage = { getItem: () => JSON.stringify({ writes: true, readsFail: true }), setItem: () => undefined };
+  jest.isolateModules(() => {
+    const fresh = jest.requireActual<typeof import("./faults")>("./faults");
+    expect(() => fresh.writePoint()).not.toThrow();
+    expect(() => fresh.readPoint()).not.toThrow();
+  });
   delete (globalThis as { sessionStorage?: unknown }).sessionStorage;
-  process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS = original;
-  jest.resetModules();
 });
 
-test("faults left in sessionStorage do nothing in the person's app", () => {
-  delete process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS;
-  withSession(JSON.stringify({ writes: true, readsFail: true }));
-  jest.isolateModules(() => {
-    const { readPoint, writePoint } = jest.requireActual<typeof import("./faults")>("./faults");
-    expect(() => writePoint()).not.toThrow();
-    expect(() => readPoint()).not.toThrow();
-  });
-});
-
-test("faults kept in sessionStorage come back in a build with the test hooks on", () => {
-  process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS = "1";
-  withSession(JSON.stringify({ writes: true, readsFail: false }));
-  jest.isolateModules(() => {
-    const { writePoint } = jest.requireActual<typeof import("./faults")>("./faults");
-    expect(() => writePoint()).toThrow("Storage write failed");
-  });
+test("every change goes to the store the hooks give, and comes back after a restart", () => {
+  const kept: unknown[] = [];
+  persistWith((f) => kept.push(f));
+  setWritesFail(true);
+  const stored = kept.at(-1) as object;
+  expect(stored).toEqual({ writes: true, readsOnce: 0, readsFail: false });
+  // the app starts again: memory is empty, the stored faults come back
+  persistWith(null);
+  clearFaults();
+  expect(() => writePoint()).not.toThrow();
+  restoreFaults(stored);
+  expect(() => writePoint()).toThrow("Storage write failed");
+  expect(faultState().writes).toBe(true);
 });
 
 test("failNextReads fails just that many loads", () => {
-  jest.isolateModules(() => {
-    const { failNextReads, readPoint } = jest.requireActual<typeof import("./faults")>("./faults");
-    failNextReads(1);
-    expect(() => readPoint()).toThrow("Storage read failed");
-    expect(() => readPoint()).not.toThrow();
-  });
+  failNextReads(1);
+  expect(() => readPoint()).toThrow("Storage read failed");
+  expect(() => readPoint()).not.toThrow();
 });

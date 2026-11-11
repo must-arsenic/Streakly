@@ -3,7 +3,7 @@
 // /__test/sign-in?email=, /__test/force?route=&mode=empty|slow|error.
 import { open, reset } from "./db";
 import { addDays, type Day, today } from "./days";
-import { clearFaults, failNextReads, retried, setReadsFail, setWritesFail } from "./faults";
+import { clearFaults, failNextReads, type Faults, faultState, persistWith, restoreFaults, retried, setReadsFail, setWritesFail } from "./faults";
 import { announce, type Theme } from "./store";
 
 export type Mode = "empty" | "slow" | "error";
@@ -48,6 +48,27 @@ function loadForced(): void {
   }
 }
 if (hooksOn()) loadForced();
+
+const FAULTS_KEY = "testHooks.faults";
+
+/** Stores the faults in SQLite: the judged run starts the app again after each seed. */
+async function persistFaults(f: Faults = faultState()): Promise<void> {
+  const db = await open();
+  await db.run(
+    "INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;",
+    FAULTS_KEY,
+    JSON.stringify(f),
+  );
+}
+if (hooksOn()) persistWith((f) => void persistFaults(f).catch(() => undefined));
+
+/** At start, in the judged run: the faults a seed stored before the app was started again. */
+export async function loadHookState(): Promise<void> {
+  if (!hooksOn()) return;
+  const db = await open();
+  const rows = await db.all<{ value: string }>("SELECT value FROM kv WHERE key = ?;", FAULTS_KEY);
+  if (rows[0]) restoreFaults(JSON.parse(rows[0].value) as Partial<Faults>);
+}
 
 type SeedHabit = { name: string; colour?: number; ticks?: (number | Day)[] };
 
@@ -112,14 +133,24 @@ export const seeds: Record<string, () => Promise<void>> = {
   "eight-long-names": async () => put(range(0, 7).map((i) => ({ name: longName(i), colour: i, ticks: i % 2 ? [0, 1] : [2] }))),
   "light-theme": async () => put([{ name: "Water" }], { theme: "light" }),
   "dark-theme": async () => put([{ name: "Water" }], { theme: "dark" }),
-  "writes-fail": async () => setWritesFail(true),
-  "writes-work": async () => setWritesFail(false),
-  "load-fails-once": async () => setReadsFail(true),
+  "writes-fail": async () => {
+    setWritesFail(true);
+    await persistFaults();
+  },
+  "writes-work": async () => {
+    setWritesFail(false);
+    await persistFaults();
+  },
+  "load-fails-once": async () => {
+    setReadsFail(true);
+    await persistFaults();
+  },
   "reads-work": async () => {
     forced.clear();
     saveForced();
     setReadsFail(false);
     failNextReads(0);
+    await persistFaults();
   },
 };
 

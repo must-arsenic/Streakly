@@ -160,3 +160,14 @@ test("[e2e->ac~streakly.habit-reorder.persists~1] a dragged order sticks after a
   const rows = page.locator('[data-testid^="week-row-"] [role="rowheader"]');
   await expect(rows).toHaveText(["Stretch", "Water", "Read"]);
 });
+
+test("[e2e->ac~streakly.tick-today.tick~1] quick taps on two tick boxes save both", async ({ page }) => {
+  await start(page, "two-habits");
+  await tick(page, "Water").click();
+  await tick(page, "Read").click();
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "true");
+  await expect(tick(page, "Read")).toHaveAttribute("aria-checked", "true");
+  await page.reload();
+  await expect(tick(page, "Read")).toHaveAttribute("aria-checked", "true");
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "true");
+});

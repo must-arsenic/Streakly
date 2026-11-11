@@ -20,7 +20,8 @@ export function asDay(day: Day | Date): Day {
   return utcMidnight ? day.toISOString().slice(0, 10) : dayOf(day);
 }
 
-export function today(now: Date = new Date()): Day {
+// "Now" is read through Date.now(), so a stubbed clock is the clock.
+export function today(now: Date = new Date(Date.now())): Day {
   return dayOf(now);
 }
 
@@ -63,7 +64,7 @@ export function longDate(day: Day, locale?: string): string {
 }
 
 /** Milliseconds from `now` to the next local midnight. */
-export function msToMidnight(now: Date = new Date()): number {
+export function msToMidnight(now: Date = new Date(Date.now())): number {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
   return Math.max(0, next.getTime() - now.getTime());
 }

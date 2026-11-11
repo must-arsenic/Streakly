@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (23 jest, 46 playwright)
+## State: all items done, every test passes (25 jest, 47 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -53,3 +53,10 @@
   time (hidden tests were written against it). Restored with its original meaning (next n loads fail); the seed uses
   setReadsFail (until Try again). RULE: never remove or rename an export that existed at the contract commit (f9bb9e2);
   checked all of src/: nothing else removed.
+- Round 6: engine says hidden tests run ON THE PHONE and restart the app after reset/seed (not after force).
+  - Faults (writes-fail, load-fails-once, ...) now stored in SQLite kv "testHooks.faults" (test-hooks persistFaults,
+    faults.persistWith); loaded at start by loadHookState() in _layout before the first screen. No sessionStorage in faults.
+    Forced modes stay in memory.
+  - use-save queues changes (review: quick taps were dropped).
+  - Week column headers carry an accessibility label "Wed 11" (the visible text has a line break).
+  - "Now" is new Date(Date.now()) so a stubbed Date.now() is honoured.

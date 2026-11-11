@@ -91,3 +91,13 @@ test("a date-only Date is the same day in every time zone", () => {
     expect([tz, ...JSON.parse(out.stdout.toString())]).toEqual([tz, "2026-11-10", "2026-11-09", "2026-11-10", "2026-11-10"]);
   }
 });
+
+test("today follows a stubbed Date.now()", () => {
+  const spy = jest.spyOn(Date, "now").mockReturnValue(new Date(2026, 10, 10, 9, 0).getTime());
+  try {
+    expect(today()).toBe("2026-11-10");
+    expect(canTick("2026-11-11", today())).toBe(false);
+  } finally {
+    spy.mockRestore();
+  }
+});

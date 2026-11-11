@@ -27,14 +27,23 @@ export default function Week() {
   if (list.state === "loading") body = <Loading />;
   else if (list.state === "error") body = <LoadError onRetry={retryLoad} />;
   else if (list.data.habits.length === 0)
-    body = <Empty onAdd={() => router.push("/habits/new")} what="Each habit you keep gets a row here, with a box for each of the last 7 days." />;
+    body = (
+      <Empty onAdd={() => router.push("/habits/new")} what="Each habit you keep gets a row here, with a box for each of the last 7 days." />
+    );
   else {
     const { habits, ticks } = list.data;
     body = (
       <View role="grid" accessibilityLabel="Week view" style={styles.grid}>
         <View role="rowgroup" style={[styles.cells, styles.header]} testID="week-header">
           {days.map((day) => (
-            <View key={day} role="columnheader" style={styles.column} testID={`week-column-${day}`}>
+            <View
+              key={day}
+              role="columnheader"
+              accessible
+              accessibilityLabel={`${weekdayShort(day)} ${dayNumber(day)}`}
+              style={styles.column}
+              testID={`week-column-${day}`}
+            >
               <Text style={[styles.head, { color: day === today ? p.accent : p.muted }]}>{`${weekdayShort(day)}\n${dayNumber(day)}`}</Text>
             </View>
           ))}
@@ -43,7 +52,12 @@ export default function Week() {
           const colour = colours[habit.colour] ?? p.accent;
           const ticked = new Set(ticks[habit.id] ?? []);
           return (
-            <View key={habit.id} role="row" testID={`week-row-${habit.id}`} style={[styles.habit, { backgroundColor: p.surface, borderColor: p.border }]}>
+            <View
+              key={habit.id}
+              role="row"
+              testID={`week-row-${habit.id}`}
+              style={[styles.habit, { backgroundColor: p.surface, borderColor: p.border }]}
+            >
               <View style={styles.nameLine}>
                 <View style={[styles.dot, { backgroundColor: colour }]} />
                 <Text role="rowheader" style={[styles.name, { color: p.text }]}>

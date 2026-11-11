@@ -10,6 +10,7 @@ import { Loading, LoadError } from "@/components/ui";
 
 import { AppProvider } from "@/lib/app-state";
 import { open } from "@/lib/db";
+import { loadHookState } from "@/lib/test-hooks";
 import { tokens } from "@/theme/tokens";
 import { ThemeChoice, usePalette, useScheme } from "@/theme/use-palette";
 
@@ -19,6 +20,7 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     open()
+      .then(loadHookState)
       .catch(() => undefined)
       .finally(() => {
         setReady(true);

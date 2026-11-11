@@ -1,44 +1,34 @@
 // Storage faults the test hooks can switch on, so save and load failures can be reached. They stay
 // off in the person's app: only the test hooks (which answer only when switched on) and unit tests
-// set them, and only a build with the hooks on keeps them in sessionStorage (on the web, so a page
-// reload keeps them) or reads them back from it.
+// set them. The hooks keep them in SQLite (see `persistWith`), because the judged run starts the
+// app again after each seed: they must outlive that restart.
 
 /**
  * `readsOnce`: that many next loads of the habit list fail. `readsFail`: they fail until the person
  * taps "Try again".
  */
-type Faults = { writes: boolean; readsOnce: number; readsFail: boolean };
+export type Faults = { writes: boolean; readsOnce: number; readsFail: boolean };
 
-const KEY = "streakly.faults";
-const hooksBuild = process.env.EXPO_PUBLIC_AIOS_TEST_HOOKS === "1";
-let faults: Faults = load();
-
-function storage(): Storage | undefined {
-  try {
-    return (globalThis as { sessionStorage?: Storage }).sessionStorage;
-  } catch {
-    return undefined;
-  }
-}
-
-function load(): Faults {
-  if (!hooksBuild) return { writes: false, readsOnce: 0, readsFail: false };
-  try {
-    const raw = storage()?.getItem(KEY);
-    if (raw) return { writes: false, readsOnce: 0, readsFail: false, ...JSON.parse(raw) };
-  } catch {
-    // no saved faults
-  }
-  return { writes: false, readsOnce: 0, readsFail: false };
-}
+const none: Faults = { writes: false, readsOnce: 0, readsFail: false };
+let faults: Faults = none;
+let persist: ((f: Faults) => void) | null = null;
 
 function save(): void {
-  if (!hooksBuild) return;
-  try {
-    storage()?.setItem(KEY, JSON.stringify(faults));
-  } catch {
-    // nowhere to keep them
-  }
+  persist?.(faults);
+}
+
+/** The test hooks store every change with this (and only they set it). */
+export function persistWith(store: ((f: Faults) => void) | null): void {
+  persist = store;
+}
+
+export function faultState(): Faults {
+  return faults;
+}
+
+/** Faults read back from storage when the app starts. */
+export function restoreFaults(stored: Partial<Faults>): void {
+  faults = { ...none, ...stored };
 }
 
 export function setWritesFail(on: boolean): void {
@@ -64,7 +54,7 @@ export function retried(): void {
 }
 
 export function clearFaults(): void {
-  faults = { writes: false, readsOnce: 0, readsFail: false };
+  faults = none;
   save();
 }
 
