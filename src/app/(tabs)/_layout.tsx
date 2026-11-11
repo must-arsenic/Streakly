@@ -1,4 +1,4 @@
-// The bottom tab bar: Today, Week and Settings. The first-run guide shows first until finished.
+// The bottom tab bar: Today, Week and Settings, each named just that (not "Today, tab, 1 of 3"). The first-run guide shows first until finished.
 import { Redirect, Tabs } from "expo-router";
 
 import { SettingsIcon, TodayIcon, WeekIcon } from "@/components/icons";
@@ -21,9 +21,9 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: p.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Today", tabBarIcon: ({ color }) => <TodayIcon colour={String(color)} /> }} />
-      <Tabs.Screen name="week" options={{ title: "Week", tabBarIcon: ({ color }) => <WeekIcon colour={String(color)} /> }} />
-      <Tabs.Screen name="settings" options={{ title: "Settings", tabBarIcon: ({ color }) => <SettingsIcon colour={String(color)} /> }} />
+      <Tabs.Screen name="index" options={{ title: "Today", tabBarAccessibilityLabel: "Today", tabBarIcon: ({ color }) => <TodayIcon colour={String(color)} /> }} />
+      <Tabs.Screen name="week" options={{ title: "Week", tabBarAccessibilityLabel: "Week", tabBarIcon: ({ color }) => <WeekIcon colour={String(color)} /> }} />
+      <Tabs.Screen name="settings" options={{ title: "Settings", tabBarAccessibilityLabel: "Settings", tabBarIcon: ({ color }) => <SettingsIcon colour={String(color)} /> }} />
     </Tabs>
   );
 }

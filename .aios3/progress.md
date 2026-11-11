@@ -76,3 +76,5 @@
   press picks a row up and it stays picked up after release; the next drag (anywhere on the list) moves it, a tap
   puts it down; hold-and-move in one touch still works. The list owns the move responder; rows only detect the hold.
   (Phone runners like Maestro can long-press, then swipe, but not hold-and-move.)
+- Round 9 re-sent (word for word, status.json removed: likely before my round 9 commit was checked). Added plain tab
+  accessibility labels ("Today", not React Navigation's "Today, tab, 1 of 3" on the phone).
