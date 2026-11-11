@@ -103,3 +103,5 @@
   .aios/contract/ (openapi.yaml: no HTTP API, paths {}, hooks under x-test-hooks, sign-in in x-unsupported;
   seeds.json: the 23 old seeds + 11 "Stretch"/failed-tick seeds for the new items). Old root contract/ untouched.
 - New seeds tested in src/lib/test-hooks-seeds.test.ts. Next: after the engine's go-ahead, check build/start/hooks.
+- Go-ahead received: export builds; 32 jest + 53 playwright pass; hooks checked in a browser: plain dist shows
+  not-found at /__test/reset, dist-e2e (hooks on) resets and lands on the guide; Metro starts on 8081 with hooks on.
