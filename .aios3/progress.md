@@ -105,3 +105,12 @@
 - New seeds tested in src/lib/test-hooks-seeds.test.ts. Next: after the engine's go-ahead, check build/start/hooks.
 - Go-ahead received: export builds; 32 jest + 53 playwright pass; hooks checked in a browser: plain dist shows
   not-found at /__test/reset, dist-e2e (hooks on) resets and lands on the guide; Metro starts on 8081 with hooks on.
+
+## Feature 002 archive-and-restore-habits (started 2026-11-11)
+- Contract: 18 new seeds (archived states, next-tick-fails-slowly, archived-load-fails), force route
+  "/settings/archived" ("/settings" forces the section too). Committed; status contract-ready.
+- Found in v1 code: toggleTick/setTick never refused while a failed tick was remembered, and deleteHabit/deleteAll
+  didn't clear kv failedTick. Fix in store as the architecture's Saving row says.
+- Plan: db step 2 (archived_at, restore_place); store archiveHabit/restoreHabit/loadArchived, loadList non-archived,
+  tick refusals; use-save generation (waiting ticks refused after a failed tick); Settings section; Edit Archive button;
+  seeds; utests; e2e.

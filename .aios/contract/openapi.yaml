@@ -20,7 +20,11 @@ info:
                                            makes the data a screen loads come back empty, slow (5 s)
                                            or failing, until reset. Kept in memory only. Routes that
                                            load data: "/" (Today), "/week", "/settings",
-                                           "/habits/[id]" (Edit habit; "/habits/1" also matches).
+                                           "/habits/[id]" (Edit habit; "/habits/1" also matches),
+                                           "/settings/archived" (the "Archived habits" section
+                                           in Settings: "Loading archived habits…", "Couldn't
+                                           load archived habits" with "Try again", or "No
+                                           archived habits"; forcing "/settings" does the same).
     On the phone they open as exp://127.0.0.1:8081/--/__test/<action>?...; on the web export as
     http://127.0.0.1:3000/__test/<action>?... . The first screen's root view has testID "app-ready".
 paths: {}
@@ -34,7 +38,7 @@ x-test-hooks:
         name: { type: string, description: A seed name from seeds.json }
     force:
       query:
-        route: { type: string, enum: ["/", "/week", "/settings", "/habits/[id]"] }
+        route: { type: string, enum: ["/", "/week", "/settings", "/habits/[id]", "/settings/archived"] }
         mode: { type: string, enum: [empty, slow, error] }
 x-unsupported:
   - route: /__test/sign-in

@@ -134,5 +134,77 @@
   {
     "name": "reads-work",
     "what": "Adds nothing: clears forced empty/slow/error states and read failures, so loads read storage again."
+  },
+  {
+    "name": "stretch-teal",
+    "what": "Guide finished, one habit \"Stretch\" in Teal, no ticks."
+  },
+  {
+    "name": "stretch-today-yesterday-read",
+    "what": "Guide finished, habits \"Stretch\" (ticked today and yesterday: 2 ticks) and \"Read\" (no ticks), in that order."
+  },
+  {
+    "name": "stretch-archived",
+    "what": "Guide finished, one habit \"Stretch\" (Violet, id 1), archived today, no ticks: Today shows \"No habits yet\" and Settings lists it under \"Archived habits\"."
+  },
+  {
+    "name": "stretch-archived-id-5",
+    "what": "Guide finished, one habit \"Stretch\" with id 5, archived: \"/habits/5\" shows \"This habit isn't here any more.\"."
+  },
+  {
+    "name": "stretch-archived-read-ticked",
+    "what": "Guide finished, habits \"Stretch\" (archived) and \"Read\" (ticked today): Today reads \"1 of 1 ticked\"."
+  },
+  {
+    "name": "stretch-teal-best-4-archived",
+    "what": "Guide finished, one habit \"Stretch\" in Teal with ticks on 4 days in a row (13 to 10 days before today: \"Best: 4\"), archived 2 days before today."
+  },
+  {
+    "name": "stretch-read-walk-read-archived",
+    "what": "Guide finished, habits \"Stretch\", \"Read\" and \"Walk\" (ids 1, 2, 3); \"Read\" archived from second place (between \"Stretch\" and \"Walk\"): Today lists \"Stretch\", \"Walk\"."
+  },
+  {
+    "name": "read-walk-archived-third",
+    "what": "Guide finished, habit \"Read\" and habit \"Walk\" archived from third place (as after \"Stretch\", \"Read\", \"Walk\", then \"Walk\" archived, then \"Stretch\" deleted): restoring \"Walk\" lists \"Read\", \"Walk\"."
+  },
+  {
+    "name": "stretch-archived-5-days-ago",
+    "what": "Guide finished, one habit \"Stretch\" ticked 7, 6 and 5 days before today and not since, archived 5 days before today: once restored its row reads \"0-day streak\" and \"Best: 3\"."
+  },
+  {
+    "name": "stretch-archived-3-days-ago",
+    "what": "Guide finished, one habit \"Stretch\" with no ticks, archived 3 days before today."
+  },
+  {
+    "name": "stretch-restored-today",
+    "what": "Guide finished, one habit \"Stretch\" that was archived 3 days before today and restored today: not archived, no ticks, so the 3 archived days are unticked and still tickable on Week."
+  },
+  {
+    "name": "stretch-archived-3-ticks",
+    "what": "Guide finished, one habit \"Stretch\", archived, with 3 stored ticks: yesterday, 2 days and 30 days before today."
+  },
+  {
+    "name": "stretch-archived-3-ticks-read",
+    "what": "Guide finished, habit \"Stretch\" (archived, 3 ticks: yesterday, 2 and 30 days before today) and habit \"Read\" (ticked today): 2 habits and 4 ticks."
+  },
+  {
+    "name": "stretch-archived-yesterday-ticked",
+    "what": "Guide finished, one habit \"Stretch\", archived, ticked yesterday."
+  },
+  {
+    "name": "stretch-then-read-archived",
+    "what": "Guide finished, habits \"Stretch\" and \"Read\", both archived, \"Stretch\" first and \"Read\" later: Settings lists \"Read\" above \"Stretch\"."
+  },
+  {
+    "name": "stretch-read-walk-archived",
+    "what": "Guide finished, habits \"Stretch\", \"Read\" and \"Walk\", all archived (in that order, \"Walk\" last), so Settings lists \"Walk\", \"Read\", \"Stretch\"."
+  },
+  {
+    "name": "next-tick-fails-slowly",
+    "what": "Adds nothing: the next save to storage takes 3 s and then fails (a tick that fails is remembered as usual); saves after it work. Load it after a data seed, e.g. \"stretch-read\", to tap another box while the first save is still running."
+  },
+  {
+    "name": "archived-load-fails",
+    "what": "Adds nothing: loading the \"Archived habits\" section in Settings fails (\"Couldn't load archived habits\" with \"Try again\") until \"Try again\" is tapped or \"reads-work\" is loaded."
   }
 ]
