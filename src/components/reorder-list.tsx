@@ -16,15 +16,20 @@ export function ReorderList({
   onMove,
   renderRow,
   labelOf,
+  onLift,
 }: {
   ids: number[];
   onMove: (ids: number[]) => void;
   renderRow: (id: number, state: { lifted: boolean }) => ReactNode;
   /** Each row's name for screen readers: the habit's name. */
   labelOf: (id: number) => string;
+  /** A row is lifted (true) or put down (false): the page stops scrolling meanwhile. */
+  onLift?: (lifted: boolean) => void;
 }) {
   const layouts = useRef(new Map<number, LayoutRectangle>());
   const [drag, setDrag] = useState<Drag | null>(null);
+  const lifted = drag !== null;
+  useEffect(() => onLift?.(lifted), [lifted, onLift]);
   const idsRef = useRef(ids);
   idsRef.current = ids;
   const onMoveRef = useRef(onMove);

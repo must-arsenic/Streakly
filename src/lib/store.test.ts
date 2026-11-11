@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from "@jest/globals";
+import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
 
 import { migrate, open, useDbForTests } from "./db";
 import { addDays, today as todayDay } from "./days";
@@ -139,4 +139,13 @@ test("[utest->ac~streakly.save-errors.retry~1] a failed tick is remembered and T
   await (error as TickNotSaved).retry();
   expect(await isTicked(id, today)).toBe(true);
   expect(await failedTick()).toBeNull();
+});
+
+test("after the test hooks' reset, ids start again at 1", async () => {
+  await addHabit("Water", 0, T);
+  await addHabit("Read", 0, T);
+  const { reset } = jest.requireActual<typeof import("./db")>("./db");
+  await reset();
+  const id = await addHabit("Stretch", 2, T);
+  expect(id).toBe(1);
 });

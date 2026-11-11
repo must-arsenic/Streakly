@@ -1,7 +1,7 @@
 // Today: tick each habit for today and see its streaks; long-press and drag to reorder; "+" adds
 // a habit and tapping a name edits it.
 import { router, useIsFocused } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CheckMark, PlusIcon } from "@/components/icons";
@@ -22,6 +22,7 @@ export default function Today() {
   const [list, retryLoad] = useHabitList("/");
   const saver = useSave();
   const { offer } = saver;
+  const [lifted, setLifted] = useState(false);
   // A tick that couldn't be saved before the app last closed: offer to try it again.
   useEffect(() => {
     failedTick().then(
@@ -47,6 +48,7 @@ export default function Today() {
       <ReorderList
         ids={habits.map((h) => h.id)}
         onMove={(ids) => void saver.save(() => reorder(ids))}
+        onLift={setLifted}
         labelOf={(id) => byId.get(id)?.name ?? ""}
         renderRow={(id, { lifted }) => {
           const habit = byId.get(id) as Habit;
@@ -69,7 +71,7 @@ export default function Today() {
 
   return (
     <View style={[styles.screen, { backgroundColor: p.bg }]}>
-      <Page>
+      <Page scrollEnabled={!lifted}>
         <Title over={longDate(today)}>Today</Title>
         {summary ? <Text style={[styles.summary, { color: p.muted }]}>{summary}</Text> : null}
         {saver.failed ? <SaveError onRetry={saver.retry} busy={saver.busy} /> : null}

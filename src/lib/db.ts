@@ -105,8 +105,11 @@ export async function migrate(db: Db): Promise<void> {
   }
 }
 
-/** Every table emptied: add each new table here. */
+/**
+ * Every table emptied, as on a fresh install (the test hooks' reset): add each new table here. Ids
+ * start again at 1, as they would on a fresh install.
+ */
 export async function reset(): Promise<void> {
   const db = await open();
-  await db.tx((t = db) => t.exec("DELETE FROM ticks; DELETE FROM habits; DELETE FROM kv;"));
+  await db.tx((t = db) => t.exec("DELETE FROM ticks; DELETE FROM habits; DELETE FROM kv; DELETE FROM sqlite_sequence;"));
 }

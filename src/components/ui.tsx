@@ -64,11 +64,14 @@ export function Page({
   scroll = true,
   style,
   behind = false,
+  scrollEnabled = true,
 }: {
   children: ReactNode;
   scroll?: boolean;
   style?: ViewStyle;
   behind?: boolean;
+  /** Off while something on the page is being dragged, so the page doesn't take the drag. */
+  scrollEnabled?: boolean;
 }) {
   const p = usePalette();
   const inner = (
@@ -87,6 +90,7 @@ export function Page({
       style={[styles.page, { backgroundColor: p.bg }]}
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
+      scrollEnabled={scrollEnabled}
     >
       {inner}
     </ScrollView>

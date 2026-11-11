@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (27 jest, 49 playwright)
+## State: all items done, every test passes (28 jest, 50 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -66,3 +66,8 @@
     A failed tick throws TickNotSaved (retry = the exact tick) and is remembered in kv "failedTick", so after the
     engine's restart Today still shows "Couldn't save your change" + Try again (save-errors.retry needs a seed = restart).
   - Today rows: aria-label on web only (on the phone the name and tick box already carry the habit's name).
+- Round 8 (hints given): the delete items said "Delete habit" wasn't on the Edit screen; keeps-ticks: Save didn't return.
+  Likely the tests open /habits/1 directly, and ids kept counting after reset (AUTOINCREMENT). reset() (test hooks
+  only) now also empties sqlite_sequence: ids start at 1 like a fresh install. deleteAll keeps ids unique.
+  - Reorder on the phone: Today's ScrollView stops scrolling while a row is lifted (Android scroll took the drag).
+  - save-errors.theme still unexplained (stored theme and selection unchanged on failure in my tests).

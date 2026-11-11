@@ -181,3 +181,16 @@ test("[e2e->ac~streakly.tick-today.untick~1] two quick taps on one box tick and 
   await page.reload();
   await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "false");
 });
+
+test("[e2e->ac~streakly.habit-delete.confirm~1] Edit habit opened by its address, the first habit being id 1", async ({ page }) => {
+  await start(page, "water-read-stretch");
+  await start(page, "stretch-5-ticks");
+  await page.goto("/habits/1");
+  await expect(page.getByLabel("Name")).toHaveValue("Stretch");
+  await page.getByRole("button", { name: "Delete habit" }).click();
+  await expect(page.getByRole("dialog").getByText("Delete this habit and all its history?")).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
+  await page.getByLabel("Name").fill("Stretch more");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("link", { name: "Stretch more" })).toBeVisible();
+});
