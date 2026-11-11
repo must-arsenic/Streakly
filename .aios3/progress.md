@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (28 jest, 50 playwright)
+## State: all items done, every test passes (28 jest, 51 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -71,3 +71,8 @@
   only) now also empties sqlite_sequence: ids start at 1 like a fresh install. deleteAll keeps ids unique.
   - Reorder on the phone: Today's ScrollView stops scrolling while a row is lifted (Android scroll took the drag).
   - save-errors.theme still unexplained (stored theme and selection unchanged on failure in my tests).
+- Round 9 (same delete/reorder items): "Delete habit" moved into the Edit habit header (always in view on a phone,
+  above the keyboard; hidden while the prompt is open so "Delete" matches only the prompt). Reorder rewritten: a long
+  press picks a row up and it stays picked up after release; the next drag (anywhere on the list) moves it, a tap
+  puts it down; hold-and-move in one touch still works. The list owns the move responder; rows only detect the hold.
+  (Phone runners like Maestro can long-press, then swipe, but not hold-and-move.)

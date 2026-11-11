@@ -1,6 +1,8 @@
-// A list whose rows can be long-pressed (500 ms) and dragged to a new place. The new order is
-// handed to `onMove`; the list itself only changes when the saved order comes back. Screen readers
-// get "Move up" and "Move down" actions instead.
+// A list whose rows can be long-pressed (500 ms) to pick them up and dragged to a new place. A row
+// stays picked up after the long press ends: the next drag (from anywhere on the list) moves it, and
+// a tap puts it back down. Holding and moving in one touch works too. The new order is handed to
+// `onMove`; the list itself only changes when the saved order comes back. Screen readers get
+// "Move up" and "Move down" actions instead.
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { type LayoutRectangle, PanResponder, Platform, StyleSheet, View, type ViewStyle } from "react-native";
 
@@ -9,7 +11,7 @@ import { tokens } from "@/theme/tokens";
 const HOLD_MS = 500;
 const SLOP = 8;
 
-type Drag = { id: number; dy: number; moving: boolean };
+type Drag = { id: number; dy: number };
 
 export function ReorderList({
   ids,
@@ -23,11 +25,12 @@ export function ReorderList({
   renderRow: (id: number, state: { lifted: boolean }) => ReactNode;
   /** Each row's name for screen readers: the habit's name. */
   labelOf: (id: number) => string;
-  /** A row is lifted (true) or put down (false): the page stops scrolling meanwhile. */
+  /** A row is picked up (true) or put down (false): the page stops scrolling meanwhile. */
   onLift?: (lifted: boolean) => void;
 }) {
   const layouts = useRef(new Map<number, LayoutRectangle>());
   const [drag, setDrag] = useState<Drag | null>(null);
+  const picked = useRef<number | null>(null);
   const lifted = drag !== null;
   useEffect(() => onLift?.(lifted), [lifted, onLift]);
   const idsRef = useRef(ids);
@@ -35,17 +38,10 @@ export function ReorderList({
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
 
-  // A press anywhere ending without a drag drops the lifted row.
-  useEffect(() => {
-    if (Platform.OS !== "web" || typeof window === "undefined") return;
-    const up = () => setDrag((d) => (d && !d.moving ? null : d));
-    window.addEventListener("pointerup", up);
-    window.addEventListener("mouseup", up);
-    return () => {
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("mouseup", up);
-    };
-  }, []);
+  const pick = (id: number | null) => {
+    picked.current = id;
+    setDrag(id === null ? null : { id, dy: 0 });
+  };
 
   const target = (id: number, dy: number): number[] => {
     const order = idsRef.current;
@@ -73,19 +69,40 @@ export function ReorderList({
     onMoveRef.current(order);
   };
 
+  // The list moves the picked-up row: it takes every touch while a row is picked up.
+  const list = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponderCapture: () => picked.current !== null,
+        onMoveShouldSetPanResponderCapture: (_e, g) => picked.current !== null && (Math.abs(g.dy) > SLOP || Math.abs(g.dx) > SLOP),
+        onPanResponderMove: (_e, g) => {
+          if (picked.current !== null) setDrag({ id: picked.current, dy: g.dy });
+        },
+        onPanResponderRelease: (_e, g) => {
+          const id = picked.current;
+          pick(null);
+          if (id === null || Math.abs(g.dy) <= SLOP) return; // a tap: put it back down
+          const next = target(id, g.dy);
+          if (next.join() !== idsRef.current.join()) onMoveRef.current(next);
+        },
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderTerminate: () => pick(null),
+        onShouldBlockNativeResponder: () => true,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   return (
-    <View role="table" aria-label="Today's habits" style={styles.list}>
+    <View role="table" aria-label="Today's habits" style={styles.list} {...list.panHandlers}>
       {ids.map((id) => (
         <Row
           key={id}
           id={id}
-          drag={drag?.id === id ? drag : null}
-          setDrag={setDrag}
+          dy={drag?.id === id ? drag.dy : null}
+          onPick={() => pick(id)}
+          isPicked={() => picked.current !== null}
           onLayout={(l) => layouts.current.set(id, l)}
-          onDrop={(dy) => {
-            const next = target(id, dy);
-            if (next.join() !== idsRef.current.join()) onMoveRef.current(next);
-          }}
           onAction={(by) => move(id, by)}
           label={labelOf(id)}
         >
@@ -98,28 +115,29 @@ export function ReorderList({
 
 function Row({
   id,
-  drag,
-  setDrag,
+  dy,
+  onPick,
+  isPicked,
   onLayout,
-  onDrop,
   onAction,
   label,
   children,
 }: {
   id: number;
-  drag: Drag | null;
-  setDrag: (d: Drag | null | ((d: Drag | null) => Drag | null)) => void;
+  /** How far the row is dragged; null when it isn't picked up. */
+  dy: number | null;
+  onPick: () => void;
+  isPicked: () => boolean;
   onLayout: (l: LayoutRectangle) => void;
-  onDrop: (dy: number) => void;
   onAction: (by: number) => void;
   label: string;
   children: ReactNode;
 }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const armed = useRef(false);
-  const handlers = useRef({ onDrop, setDrag });
-  handlers.current = { onDrop, setDrag };
+  const handlers = useRef({ onPick, isPicked });
+  handlers.current = { onPick, isPicked };
 
+  // The row only watches for the long press; the list does the moving.
   const responder = useMemo(() => {
     const clear = () => {
       if (timer.current) clearTimeout(timer.current);
@@ -128,43 +146,19 @@ function Row({
     return PanResponder.create({
       onStartShouldSetPanResponderCapture: () => {
         clear();
-        armed.current = false;
-        timer.current = setTimeout(() => {
-          armed.current = true;
-          handlers.current.setDrag({ id, dy: 0, moving: false });
-        }, HOLD_MS);
+        if (!handlers.current.isPicked()) timer.current = setTimeout(() => handlers.current.onPick(), HOLD_MS);
         return false;
       },
       onMoveShouldSetPanResponderCapture: (_e, g) => {
-        if (armed.current) return true;
         if (Math.abs(g.dx) > SLOP || Math.abs(g.dy) > SLOP) clear();
         return false;
       },
-      onPanResponderGrant: () => handlers.current.setDrag({ id, dy: 0, moving: true }),
-      onPanResponderMove: (_e, g) => handlers.current.setDrag({ id, dy: g.dy, moving: true }),
-      onPanResponderRelease: (_e, g) => {
-        armed.current = false;
-        clear();
-        handlers.current.setDrag(null);
-        handlers.current.onDrop(g.dy);
-      },
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderTerminate: () => {
-        armed.current = false;
-        clear();
-        handlers.current.setDrag(null);
-      },
-      onShouldBlockNativeResponder: () => true,
     });
-  }, [id]);
+  }, []);
 
   const end = () => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    if (!drag?.moving) {
-      armed.current = false;
-      setDrag((d) => (d?.id === id && !d.moving ? null : d));
-    }
   };
 
   return (
@@ -181,7 +175,8 @@ function Row({
         { name: "moveDown", label: "Move down" },
       ]}
       onAccessibilityAction={(e) => onAction(e.nativeEvent.actionName === "moveUp" ? -1 : 1)}
-      style={[styles.row, drag ? { zIndex: 2, transform: [{ translateY: drag.dy }] } : null, Platform.OS === "web" ? noSelect : null]}
+      testID={`reorder-row-${id}`}
+      style={[styles.row, dy !== null ? { zIndex: 2, transform: [{ translateY: dy }] } : null, Platform.OS === "web" ? noSelect : null]}
     >
       {children}
     </View>

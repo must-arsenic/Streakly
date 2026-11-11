@@ -194,3 +194,36 @@ test("[e2e->ac~streakly.habit-delete.confirm~1] Edit habit opened by its address
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("link", { name: "Stretch more" })).toBeVisible();
 });
+
+test("[e2e->ac~streakly.habit-reorder.persists~1] long-press picks a habit up; a separate swipe moves it", async ({ page }) => {
+  await start(page, "water-read-stretch");
+  await expect.poll(() => todayNames(page)).toEqual(["Water", "Read", "Stretch"]);
+  const a = (await page.getByRole("link", { name: "Stretch" }).boundingBox())!;
+  const b = (await page.getByRole("link", { name: "Water" }).boundingBox())!;
+  const x = a.x + a.width / 2;
+  // long press, then let go
+  await page.mouse.move(x, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(800);
+  await page.mouse.up();
+  // a separate swipe from the row to the top
+  await page.mouse.move(x, a.y + a.height / 2);
+  await page.mouse.down();
+  for (let i = 1; i <= 10; i += 1) {
+    await page.mouse.move(x, a.y + a.height / 2 + ((b.y - 10 - (a.y + a.height / 2)) * i) / 10);
+    await page.waitForTimeout(20);
+  }
+  await page.mouse.up();
+  await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
+  await page.reload();
+  await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
+  // a tap after a long press puts the habit back down without moving it
+  const c = (await page.getByRole("link", { name: "Read" }).boundingBox())!;
+  await page.mouse.move(c.x + c.width / 2, c.y + c.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(800);
+  await page.mouse.up();
+  await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
+  await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
+  await expect(page).not.toHaveURL(/habits/);
+});

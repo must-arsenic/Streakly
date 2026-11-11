@@ -1,7 +1,7 @@
 // Edit habit: change the name and colour (the ticks stay), or delete it with all its ticks.
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { HabitForm } from "@/components/habit-form";
 import { Button, Confirm, Loading, LoadError, Page, SaveError } from "@/components/ui";
@@ -46,6 +46,23 @@ export default function EditHabit() {
   return (
     <>
       <Page behind={asking}>
+        {/* "Delete habit" sits in the header: always in view, above the keyboard. Gone while the prompt asks. */}
+        <Stack.Screen
+          options={{
+            headerRight: () =>
+              asking ? null : (
+                <Pressable
+                  role="button"
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete habit"
+                  onPress={() => setAsking(true)}
+                  style={({ pressed }) => [styles.headerButton, { opacity: pressed ? 0.7 : 1 }]}
+                >
+                  <Text style={[styles.headerButtonText, { color: p.danger }]}>Delete habit</Text>
+                </Pressable>
+              ),
+          }}
+        />
         {saver.failed ? (
           <View style={styles.banner}>
             <SaveError onRetry={saver.retry} busy={saver.busy} />
@@ -61,9 +78,6 @@ export default function EditHabit() {
             close();
           }}
         >
-          <View style={[styles.danger, { borderColor: p.border }]}>
-            <Button label="Delete habit" kind="ghost" onPress={() => setAsking(true)} />
-          </View>
         </HabitForm>
       </Page>
       <Confirm
@@ -86,7 +100,8 @@ export default function EditHabit() {
 
 const styles = StyleSheet.create({
   banner: { paddingTop: tokens.space.lg },
-  danger: { borderTopWidth: tokens.size.border, paddingTop: tokens.space.xl, alignItems: "flex-start" },
+  headerButton: { minHeight: tokens.size.tick, justifyContent: "center", paddingHorizontal: tokens.space.md },
+  headerButtonText: { fontSize: tokens.type.body, fontWeight: "600" },
   gone: { gap: tokens.space.lg, paddingTop: tokens.space.xxl, alignItems: "flex-start" },
   goneText: { fontSize: tokens.type.headline },
 });
