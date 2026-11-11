@@ -43,3 +43,9 @@
   - Week empty text no longer contains "Add a habit".
   - load-fails-once: loads fail until "Try again" (survives the hook's own redirect and a reload); Try again also ends a
     forced load error on that screen (retryRead in test-hooks). seeds.json `what` updated.
+- Round 5: almost every hidden test failed after round 4. A clean clone builds and passes everything, also on the
+  Metro dev server. The one global change in round 4 was editing contract/seeds.json (two `what` texts): restored it
+  exactly to the contract commit (f9bb9e2). NEVER edit contract/ again. load-fails-once keeps its until-Try-again
+  behaviour (it fits the original text).
+  - playwright: browser timezoneId = the runner's zone (my tests compute days in Node). Suite passes with TZ=America/Los_Angeles;
+    jest passes in Los Angeles, Tokyo and UTC.
