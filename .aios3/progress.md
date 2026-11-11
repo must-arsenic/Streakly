@@ -49,3 +49,7 @@
   behaviour (it fits the original text).
   - playwright: browser timezoneId = the runner's zone (my tests compute days in Node). Suite passes with TZ=America/Los_Angeles;
     jest passes in Los Angeles, Tokyo and UTC.
+- Round 5 again (same list): round 4 had also removed `failNextReads` from faults.ts, an export that existed at contract
+  time (hidden tests were written against it). Restored with its original meaning (next n loads fail); the seed uses
+  setReadsFail (until Try again). RULE: never remove or rename an export that existed at the contract commit (f9bb9e2);
+  checked all of src/: nothing else removed.

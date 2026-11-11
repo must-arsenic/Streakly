@@ -3,7 +3,7 @@
 // /__test/sign-in?email=, /__test/force?route=&mode=empty|slow|error.
 import { open, reset } from "./db";
 import { addDays, type Day, today } from "./days";
-import { clearFaults, retried, setReadsFail, setWritesFail } from "./faults";
+import { clearFaults, failNextReads, retried, setReadsFail, setWritesFail } from "./faults";
 import { announce, type Theme } from "./store";
 
 export type Mode = "empty" | "slow" | "error";
@@ -119,6 +119,7 @@ export const seeds: Record<string, () => Promise<void>> = {
     forced.clear();
     saveForced();
     setReadsFail(false);
+    failNextReads(0);
   },
 };
 

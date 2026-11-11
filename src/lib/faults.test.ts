@@ -35,3 +35,12 @@ test("faults kept in sessionStorage come back in a build with the test hooks on"
     expect(() => writePoint()).toThrow("Storage write failed");
   });
 });
+
+test("failNextReads fails just that many loads", () => {
+  jest.isolateModules(() => {
+    const { failNextReads, readPoint } = jest.requireActual<typeof import("./faults")>("./faults");
+    failNextReads(1);
+    expect(() => readPoint()).toThrow("Storage read failed");
+    expect(() => readPoint()).not.toThrow();
+  });
+});
