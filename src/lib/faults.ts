@@ -5,9 +5,10 @@
 
 /**
  * `readsOnce`: that many next loads of the habit list fail. `readsFail`: they fail until the person
- * taps "Try again".
+ * taps "Try again". `archivedFail`: loads of the archived habits fail until "Try again".
+ * `slowFail`: the next tick save takes 3 s and then fails.
  */
-export type Faults = { writes: boolean; readsOnce: number; readsFail: boolean };
+export type Faults = { writes: boolean; readsOnce: number; readsFail: boolean; archivedFail?: boolean; slowFail?: boolean };
 
 const none: Faults = { writes: false, readsOnce: 0, readsFail: false };
 let faults: Faults = none;
@@ -48,9 +49,22 @@ export function setReadsFail(on: boolean): void {
   save();
 }
 
+/** Loads of the archived habits fail (`on`) until a retry. */
+export function setArchivedReadsFail(on: boolean): void {
+  faults = { ...faults, archivedFail: on };
+  save();
+}
+
+/** The next tick save takes 3 s and then fails (`on`). */
+export function setSlowFail(on: boolean): void {
+  faults = { ...faults, slowFail: on };
+  save();
+}
+
 /** The person tapped "Try again" after a load error: storage reads again. */
 export function retried(): void {
   if (faults.readsFail) setReadsFail(false);
+  if (faults.archivedFail) setArchivedReadsFail(false);
 }
 
 export function clearFaults(): void {
@@ -71,4 +85,17 @@ export function readPoint(): void {
     save();
     throw new Error("Storage read failed");
   }
+}
+
+/** Called before every load of the archived habits. */
+export function archivedReadPoint(): void {
+  if (faults.archivedFail) throw new Error("Storage read failed");
+}
+
+/** Called in a tick's save before it writes: with `slowFail`, waits 3 s and fails (once). */
+export async function slowWritePoint(): Promise<void> {
+  if (!faults.slowFail) return;
+  setSlowFail(false);
+  await new Promise((r) => setTimeout(r, 3000));
+  throw new Error("Storage write failed");
 }

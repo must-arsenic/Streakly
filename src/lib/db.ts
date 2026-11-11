@@ -88,6 +88,9 @@ const steps: string[] = [
      PRIMARY KEY (habit_id, date)
    );
    CREATE INDEX IF NOT EXISTS ticks_by_habit ON ticks (habit_id);`,
+  // archived habits: when (ms, null = not archived) and the 0-based place to restore to
+  `ALTER TABLE habits ADD COLUMN archived_at INTEGER;
+   ALTER TABLE habits ADD COLUMN restore_place INTEGER;`,
 ];
 
 export async function migrate(db: Db): Promise<void> {

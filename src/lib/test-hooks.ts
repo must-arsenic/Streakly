@@ -3,7 +3,19 @@
 // /__test/sign-in?email=, /__test/force?route=&mode=empty|slow|error.
 import { open, reset } from "./db";
 import { addDays, type Day, today } from "./days";
-import { clearFaults, failNextReads, type Faults, faultState, persistWith, restoreFaults, retried, setReadsFail, setWritesFail } from "./faults";
+import {
+  clearFaults,
+  failNextReads,
+  type Faults,
+  faultState,
+  persistWith,
+  restoreFaults,
+  retried,
+  setArchivedReadsFail,
+  setReadsFail,
+  setSlowFail,
+  setWritesFail,
+} from "./faults";
 import { announce, type Theme } from "./store";
 
 export type Mode = "empty" | "slow" | "error";
@@ -70,7 +82,12 @@ export async function loadHookState(): Promise<void> {
   if (rows[0]) restoreFaults(JSON.parse(rows[0].value) as Partial<Faults>);
 }
 
-type SeedHabit = { name: string; colour?: number; ticks?: (number | Day)[] };
+/**
+ * `archivedAgo`: archived that many days ago (0 = today). `restorePlace`: its 0-based place to
+ * restore to; by default its place among the seed's habits that aren't archived. `id`: a given id.
+ */
+type SeedHabit = { name: string; colour?: number; ticks?: (number | Day)[]; archivedAgo?: number; restorePlace?: number; id?: number };
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Stores habits in this order after any already stored; ticks are days ago (0 = today) or dates. */
 async function put(
@@ -83,14 +100,20 @@ async function put(
     const max = await t.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
     let position = (max[0]?.p ?? -1) + 1;
     const ids: number[] = [];
+    let shown = 0;
     for (const [i, h] of habits.entries()) {
+      const archived = h.archivedAgo !== undefined;
       await t.run(
-        "INSERT INTO habits (name, colour, position, created_on) VALUES (?, ?, ?, ?);",
+        "INSERT INTO habits (id, name, colour, position, created_on, archived_at, restore_place) VALUES (?, ?, ?, ?, ?, ?, ?);",
+        h.id ?? null,
         h.name,
         h.colour ?? i % 8,
         position,
         addDays(now, -30),
+        archived ? Date.now() - (h.archivedAgo ?? 0) * DAY_MS + i : null,
+        archived ? (h.restorePlace ?? shown) : null,
       );
+      if (!archived) shown += 1;
       position += 1;
       const [{ id }] = await t.all<{ id: number }>("SELECT last_insert_rowid() AS id;");
       ids.push(id);
@@ -154,6 +177,32 @@ export const seeds: Record<string, () => Promise<void>> = {
     put([{ name: "Stretch" }, { name: "Read" }], { failed: { habit: 0, ago: 0, ticked: true } }),
   "stretch-failed-tick-expired": async () =>
     put([{ name: "Stretch" }, { name: "Read" }], { failed: { habit: 0, ago: 7, ticked: true } }),
+  "stretch-teal": async () => put([{ name: "Stretch", colour: 4 }]),
+  "stretch-today-yesterday-read": async () => put([{ name: "Stretch", ticks: [0, 1] }, { name: "Read" }]),
+  "stretch-archived": async () => put([{ name: "Stretch", colour: 0, archivedAgo: 0 }]),
+  "stretch-archived-id-5": async () => put([{ name: "Stretch", colour: 0, archivedAgo: 0, id: 5 }]),
+  "stretch-archived-read-ticked": async () => put([{ name: "Stretch", archivedAgo: 0 }, { name: "Read", ticks: [0] }]),
+  "stretch-teal-best-4-archived": async () => put([{ name: "Stretch", colour: 4, ticks: range(10, 13), archivedAgo: 2 }]),
+  "stretch-read-walk-read-archived": async () =>
+    put([{ name: "Stretch" }, { name: "Read", archivedAgo: 0, restorePlace: 1 }, { name: "Walk" }]),
+  "read-walk-archived-third": async () => put([{ name: "Read", colour: 1 }, { name: "Walk", colour: 2, archivedAgo: 0, restorePlace: 2 }]),
+  "stretch-archived-5-days-ago": async () => put([{ name: "Stretch", ticks: [7, 6, 5], archivedAgo: 5 }]),
+  "stretch-archived-3-days-ago": async () => put([{ name: "Stretch", archivedAgo: 3 }]),
+  "stretch-restored-today": async () => put([{ name: "Stretch" }]),
+  "stretch-archived-3-ticks": async () => put([{ name: "Stretch", ticks: [1, 2, 30], archivedAgo: 0 }]),
+  "stretch-archived-3-ticks-read": async () => put([{ name: "Stretch", ticks: [1, 2, 30], archivedAgo: 0 }, { name: "Read", ticks: [0] }]),
+  "stretch-archived-yesterday-ticked": async () => put([{ name: "Stretch", ticks: [1], archivedAgo: 0 }]),
+  "stretch-then-read-archived": async () => put([{ name: "Stretch", archivedAgo: 0 }, { name: "Read", archivedAgo: 0 }]),
+  "stretch-read-walk-archived": async () =>
+    put([{ name: "Stretch", archivedAgo: 0 }, { name: "Read", archivedAgo: 0 }, { name: "Walk", archivedAgo: 0 }]),
+  "next-tick-fails-slowly": async () => {
+    setSlowFail(true);
+    await persistFaults();
+  },
+  "archived-load-fails": async () => {
+    setArchivedReadsFail(true);
+    await persistFaults();
+  },
   "writes-fail": async () => {
     setWritesFail(true);
     await persistFaults();
@@ -170,6 +219,7 @@ export const seeds: Record<string, () => Promise<void>> = {
     forced.clear();
     saveForced();
     setReadsFail(false);
+    setArchivedReadsFail(false);
     failNextReads(0);
     await persistFaults();
   },
@@ -214,16 +264,19 @@ if (hooksOn()) (globalThis as { __streaklyHooks?: unknown }).__streaklyHooks = {
 export function retryRead(route: string): void {
   if (!hooksOn()) return;
   const key = routeKey(route);
-  if (forced.get(key) === "error") {
-    forced.delete(key);
-    saveForced();
-  }
+  for (const k of key === "/settings/archived" ? [key, "/settings"] : [key])
+    if (forced.get(k) === "error") {
+      forced.delete(k);
+      saveForced();
+    }
   retried();
 }
 
 /** Wrap every data read a screen makes, so its empty, loading and error states can be forced. */
 export async function testable<T>(route: string, empty: T, read: () => Promise<T>): Promise<T> {
-  const mode = hooksOn() ? forced.get(routeKey(route)) : undefined;
+  const key = routeKey(route);
+  // forcing "/settings" forces the one thing it loads, its "Archived habits" section
+  const mode = hooksOn() ? (forced.get(key) ?? (key === "/settings/archived" ? forced.get("/settings") : undefined)) : undefined;
   if (mode === "empty") return empty;
   if (mode === "slow") await new Promise((r) => setTimeout(r, 5000));
   if (mode === "error") throw new Error(`forced error on ${route}`);
