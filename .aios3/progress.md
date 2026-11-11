@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (25 jest, 47 playwright)
+## State: all items done, every test passes (27 jest, 49 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -60,3 +60,9 @@
   - use-save queues changes (review: quick taps were dropped).
   - Week column headers carry an accessibility label "Wed 11" (the visible text has a line break).
   - "Now" is new Date(Date.now()) so a stubbed Date.now() is honoured.
+- Round 7: faults-in-SQLite fixed save-errors.tick, form save-error, states.retry.
+  - SQLite journal_mode=DELETE + synchronous=FULL: every commit lands in app.db itself.
+  - toggleTick: read + write in one transaction (review: two quick taps on one box now tick and untick).
+    A failed tick throws TickNotSaved (retry = the exact tick) and is remembered in kv "failedTick", so after the
+    engine's restart Today still shows "Couldn't save your change" + Try again (save-errors.retry needs a seed = restart).
+  - Today rows: aria-label on web only (on the phone the name and tick box already carry the habit's name).

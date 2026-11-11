@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, test } from "@jest/globals";
 
 import { migrate, open, useDbForTests } from "./db";
-import { addDays } from "./days";
+import { addDays, today as todayDay } from "./days";
 import { clearFaults, setWritesFail } from "./faults";
 import { nodeDb } from "./node-db.testutil";
-import { addHabit, countTicks, deleteAll, deleteHabit, loadList, loadSettings, reorder, setGuideDone, setTheme, setTick } from "./store";
+import { addHabit, countTicks, deleteAll, deleteHabit, failedTick, isTicked, loadList, loadSettings, reorder, setGuideDone, setTheme, setTick, TickNotSaved, toggleTick } from "./store";
 
 const T = "2026-11-10";
 let db: ReturnType<typeof nodeDb>;
@@ -116,4 +116,27 @@ test("[utest->ac~streakly.no-partial-saves.delete~1] saves started together neve
   expect(results[1].status).toBe("fulfilled");
   expect(await countTicks(id)).toBe(5);
   expect(await countTicks(other)).toBe(1);
+});
+
+test("[utest->ac~streakly.tick-today.untick~1] two quick toggles tick and untick", async () => {
+  const id = await addHabit("Water", 0, T);
+  const today = todayDay();
+  const [a, b] = await Promise.all([toggleTick(id, today), toggleTick(id, today)]);
+  expect([a, b]).toEqual([true, false]);
+  expect(await isTicked(id, today)).toBe(false);
+});
+
+test("[utest->ac~streakly.save-errors.retry~1] a failed tick is remembered and Try again saves exactly it", async () => {
+  const id = await addHabit("Water", 0, T);
+  const today = todayDay();
+  setWritesFail(true);
+  const error = await toggleTick(id, today).catch((e: unknown) => e);
+  expect(error).toBeInstanceOf(TickNotSaved);
+  expect(await isTicked(id, today)).toBe(false);
+  // after a restart the failed tick is still known
+  expect(await failedTick()).toEqual({ habitId: id, day: today, ticked: true });
+  setWritesFail(false);
+  await (error as TickNotSaved).retry();
+  expect(await isTicked(id, today)).toBe(true);
+  expect(await failedTick()).toBeNull();
 });

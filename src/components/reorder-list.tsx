@@ -166,7 +166,8 @@ function Row({
     <View
       {...responder.panHandlers}
       role="row"
-      aria-label={label}
+      // the web names the row for role queries; on a phone the name and the tick box carry it
+      aria-label={Platform.OS === "web" ? label : undefined}
       onTouchEnd={end}
       onTouchCancel={end}
       onLayout={(e) => onLayout(e.nativeEvent.layout)}

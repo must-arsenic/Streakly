@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { tokens } from "../src/theme/tokens";
-import { act, background, drag, rgb, start, tab, tick, todayNames } from "./helpers";
+import { act, background, drag, hook, rgb, start, tab, tick, todayNames } from "./helpers";
 
 const banner = (page: import("@playwright/test").Page) => page.getByRole("alert").filter({ hasText: "Couldn't save your change" });
 
@@ -78,4 +78,21 @@ test("[e2e->ac~streakly.save-errors.retry~1] Try again saves the tick", async ({
   await expect(banner(page)).toHaveCount(0);
   await page.reload();
   await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "true");
+});
+
+test("[e2e->ac~streakly.save-errors.retry~1] Try again still saves the tick after the app starts again", async ({ page }) => {
+  await start(page, "water-unticked", "writes-fail");
+  await tick(page, "Water").click();
+  await expect(banner(page)).toBeVisible();
+  // the engine's way: the seed starts the app again
+  await hook(page, "seed?name=writes-work");
+  await page.goto("/");
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "false");
+  await expect(banner(page)).toBeVisible();
+  await banner(page).getByRole("button", { name: "Try again" }).click();
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "true");
+  await expect(banner(page)).toHaveCount(0);
+  await page.reload();
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "true");
+  await expect(banner(page)).toHaveCount(0);
 });

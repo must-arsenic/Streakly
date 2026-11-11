@@ -171,3 +171,13 @@ test("[e2e->ac~streakly.tick-today.tick~1] quick taps on two tick boxes save bot
   await expect(tick(page, "Read")).toHaveAttribute("aria-checked", "true");
   await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "true");
 });
+
+test("[e2e->ac~streakly.tick-today.untick~1] two quick taps on one box tick and untick", async ({ page }) => {
+  await start(page, "water-unticked");
+  await tick(page, "Water").click();
+  await tick(page, "Water").click();
+  await page.waitForTimeout(500);
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "false");
+  await page.reload();
+  await expect(tick(page, "Water")).toHaveAttribute("aria-checked", "false");
+});

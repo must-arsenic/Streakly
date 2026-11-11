@@ -23,6 +23,8 @@ let opened: Promise<Db> | null = null;
 export function open(): Promise<Db> {
   if (!opened) {
     opened = SQLite.openDatabaseAsync("app.db").then(async (raw) => {
+      // Every committed change goes straight into app.db (no write-ahead log beside it).
+      await raw.execAsync("PRAGMA journal_mode = DELETE; PRAGMA synchronous = FULL;");
       const db = expoDb(raw);
       await migrate(db);
       return db;

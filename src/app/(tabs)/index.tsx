@@ -1,6 +1,7 @@
 // Today: tick each habit for today and see its streaks; long-press and drag to reorder; "+" adds
 // a habit and tapping a name edits it.
 import { router, useIsFocused } from "expo-router";
+import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CheckMark, PlusIcon } from "@/components/icons";
@@ -8,7 +9,7 @@ import { ReorderList } from "@/components/reorder-list";
 import { Empty, Loading, LoadError, Page, SaveError, Title } from "@/components/ui";
 import { useApp } from "@/lib/app-state";
 import { longDate } from "@/lib/days";
-import { type Habit, reorder, setTick } from "@/lib/store";
+import { failedTick, type Habit, reorder, saveTick, toggleTick } from "@/lib/store";
 import { best, current } from "@/lib/streaks";
 import { useHabitList } from "@/lib/use-data";
 import { useSave } from "@/lib/use-save";
@@ -20,6 +21,14 @@ export default function Today() {
   const { today } = useApp();
   const [list, retryLoad] = useHabitList("/");
   const saver = useSave();
+  const { offer } = saver;
+  // A tick that couldn't be saved before the app last closed: offer to try it again.
+  useEffect(() => {
+    failedTick().then(
+      (tick) => tick && offer(() => saveTick(tick)),
+      () => undefined,
+    );
+  }, [offer]);
   const p = usePalette();
   if (!focused) return null;
 
@@ -50,7 +59,7 @@ export default function Today() {
               streak={current(dates, today)}
               best={best(dates)}
               lifted={lifted}
-              onTick={() => void saver.save(() => setTick(id, today, !ticked))}
+              onTick={() => void saver.save(() => toggleTick(id, today))}
             />
           );
         }}

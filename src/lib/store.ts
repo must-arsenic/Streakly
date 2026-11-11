@@ -138,6 +138,96 @@ export async function setTick(habitId: number, day: Day, ticked: boolean, todayD
   announce();
 }
 
+export async function isTicked(habitId: number, day: Day): Promise<boolean> {
+  const db = await open();
+  const rows = await db.all<{ n: number }>("SELECT COUNT(*) AS n FROM ticks WHERE habit_id = ? AND date = ?;", habitId, day);
+  return (rows[0]?.n ?? 0) > 0;
+}
+
+/** A tick that couldn't be saved: what it was, so "Try again" saves exactly that. */
+export type FailedTick = { habitId: number; day: Day; ticked: boolean };
+
+/** The error of a failed tick, carrying the change to try again. */
+export class TickNotSaved extends Error {
+  constructor(readonly tick: FailedTick, cause: unknown) {
+    super("Couldn't save the tick", { cause });
+  }
+
+  /** Try again: the same tick, not another flip. */
+  retry = () => saveTick(this.tick);
+}
+
+/**
+ * Flips a habit's tick on a day, from what is stored when the save runs (so two quick taps tick
+ * and untick). A failure throws TickNotSaved and remembers the tick, so it can be tried again,
+ * even after the app starts again.
+ */
+export async function toggleTick(habitId: number, day: Day, todayDay: Day = today()): Promise<boolean> {
+  if (!canTick(day, todayDay)) throw new RangeError("Only today and the 6 days before can be ticked");
+  const db = await open();
+  const made: { tick: FailedTick | null } = { tick: null };
+  try {
+    // the read and the write in one transaction: nothing can tick in between
+    await db.tx(async (t = db) => {
+      const rows = await t.all<{ n: number }>("SELECT COUNT(*) AS n FROM ticks WHERE habit_id = ? AND date = ?;", habitId, day);
+      const tick = (made.tick = { habitId, day, ticked: (rows[0]?.n ?? 0) === 0 });
+      writePoint();
+      if (tick.ticked) await t.run("INSERT OR IGNORE INTO ticks (habit_id, date) SELECT id, ? FROM habits WHERE id = ?;", day, habitId);
+      else await t.run("DELETE FROM ticks WHERE habit_id = ? AND date = ?;", habitId, day);
+    });
+  } catch (e) {
+    if (!made.tick) throw e;
+    await rememberFailedTick(made.tick);
+    throw new TickNotSaved(made.tick, e);
+  }
+  await forgetFailedTick();
+  announce();
+  return made.tick?.ticked ?? false;
+}
+
+/** Saves a tick change; on failure remembers it (see `failedTick`). */
+export async function saveTick(tick: FailedTick): Promise<void> {
+  try {
+    await setTick(tick.habitId, tick.day, tick.ticked);
+  } catch (e) {
+    if (!(e instanceof RangeError)) await rememberFailedTick(tick);
+    throw new TickNotSaved(tick, e);
+  }
+  await forgetFailedTick();
+}
+
+const FAILED_TICK = "failedTick";
+
+// Kept outside the save's own transaction: if storage takes it, the next start can offer it again.
+async function rememberFailedTick(tick: FailedTick): Promise<void> {
+  try {
+    await setKv(await open(), FAILED_TICK, JSON.stringify(tick));
+  } catch {
+    // storage refused this too: the change is offered again until the app closes
+  }
+}
+
+async function forgetFailedTick(): Promise<void> {
+  try {
+    const db = await open();
+    await db.run("DELETE FROM kv WHERE key = ?;", FAILED_TICK);
+  } catch {
+    // nothing to forget
+  }
+}
+
+/** The tick that couldn't be saved before the app last closed, if any. */
+export async function failedTick(): Promise<FailedTick | null> {
+  const db = await open();
+  const rows = await db.all<{ value: string }>("SELECT value FROM kv WHERE key = ?;", FAILED_TICK);
+  if (!rows[0]) return null;
+  try {
+    return JSON.parse(rows[0].value) as FailedTick;
+  } catch {
+    return null;
+  }
+}
+
 /** Saves a new list order: `ids` from first to last. */
 export async function reorder(ids: number[]): Promise<void> {
   const db = await open();

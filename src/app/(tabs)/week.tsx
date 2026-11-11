@@ -7,7 +7,7 @@ import { CheckMark } from "@/components/icons";
 import { Empty, Loading, LoadError, Page, SaveError, Title } from "@/components/ui";
 import { useApp } from "@/lib/app-state";
 import { dayNumber, lastSeven, weekdayShort } from "@/lib/days";
-import { setTick } from "@/lib/store";
+import { toggleTick } from "@/lib/store";
 import { useHabitList } from "@/lib/use-data";
 import { useSave } from "@/lib/use-save";
 import { tokens } from "@/theme/tokens";
@@ -76,7 +76,7 @@ export default function Week() {
                         accessibilityState={{ checked: on }}
                         aria-checked={on}
                         testID={`cell-${habit.id}-${day}`}
-                        onPress={() => void saver.save(() => setTick(habit.id, day, !on))}
+                        onPress={() => void saver.save(() => toggleTick(habit.id, day))}
                         style={[styles.cell, { borderColor: on ? colour : p.controlBorder, backgroundColor: on ? colour : p.surface }]}
                       >
                         {on ? <CheckMark colour={p.onAccent} size={20} /> : null}
