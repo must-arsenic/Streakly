@@ -47,7 +47,7 @@ export default function Settings() {
                   role="radio"
                   accessibilityRole="radio"
                   accessibilityLabel={t.label}
-                  accessibilityState={{ checked: on }}
+                  accessibilityState={{ checked: on, selected: on }}
                   aria-checked={on}
                   onPress={() => !on && void saver.save(() => setTheme(t.value))}
                   style={[styles.option, { borderColor: on ? p.accent : p.controlBorder, backgroundColor: on ? p.accentSoft : p.surface }]}

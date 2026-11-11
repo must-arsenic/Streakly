@@ -142,6 +142,8 @@ function HabitRow({
             accessibilityRole="link"
             accessibilityHint="Edit this habit"
             onPress={open}
+            // a long press picks the habit up to drag (the row sees it): it must not open Edit habit
+            onLongPress={() => undefined}
             suppressHighlighting
             style={[styles.name, styles.nameLink, { color: p.text }]}
           >

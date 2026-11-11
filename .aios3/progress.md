@@ -93,3 +93,7 @@
 - Round 13: new screenshots: tapping "Stretch" on the phone still toggled the tick box (the runner prefers the box when
   both carry the name). On the phone the tick box is now labelled "<name>, done today"; the name alone opens Edit habit.
   Web labels unchanged. If tick items regress, this is why (runner tapping the bare name to tick).
+- Round 14: label change worked (all Edit habit items + first-run.once pass). Reorder regressed: a long press on the
+  name Text (the phone link since round 12) opened Edit habit on release (Text had no onLongPress). Fixed with a no-op
+  onLongPress on the name Text; the row's hold timer still picks the habit up. Theme radios also report selected.
+  with-today (dev menu open over Week) and save-errors.theme (screen looks right) still unexplained.
