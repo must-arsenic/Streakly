@@ -1,0 +1,43 @@
+openapi: 3.1.0
+info:
+  title: Streakly
+  version: "1"
+  description: >
+    Streakly is an Expo phone app (also exported to the web) with no server and no HTTP API:
+    every screen reads and writes the on-device SQLite database through src/lib/store.ts.
+    The app therefore serves no API routes, and `paths` is empty.
+
+    The test hooks are deep-link screens, not HTTP routes. They act only when the app was started
+    with EXPO_PUBLIC_AIOS_TEST_HOOKS=1 (AIOS_TEST_HOOKS=1 in the engine's run); otherwise each one is
+    the app's not-found screen. After acting, the hook screen replaces the route with "/".
+      - /__test/reset                      empties every table (habits, ticks, kv: theme, guide,
+                                           failed tick, stored faults), restarts ids at 1 and
+                                           clears forced modes: a fresh install.
+      - /__test/seed?name=<seed>           loads a seed from seeds.json (data is stored in SQLite,
+                                           so it survives the app being started again). An unknown
+                                           name does nothing.
+      - /__test/force?route=<route>&mode=empty|slow|error
+                                           makes the data a screen loads come back empty, slow (5 s)
+                                           or failing, until reset. Kept in memory only. Routes that
+                                           load data: "/" (Today), "/week", "/settings",
+                                           "/habits/[id]" (Edit habit; "/habits/1" also matches).
+    On the phone they open as exp://127.0.0.1:8081/--/__test/<action>?...; on the web export as
+    http://127.0.0.1:3000/__test/<action>?... . The first screen's root view has testID "app-ready".
+paths: {}
+x-test-hooks:
+  transport: deep-link
+  env: EXPO_PUBLIC_AIOS_TEST_HOOKS
+  actions:
+    reset: {}
+    seed:
+      query:
+        name: { type: string, description: A seed name from seeds.json }
+    force:
+      query:
+        route: { type: string, enum: ["/", "/week", "/settings", "/habits/[id]"] }
+        mode: { type: string, enum: [empty, slow, error] }
+x-unsupported:
+  - route: /__test/sign-in
+    why: Streakly has no accounts and nobody signs in ("Nobody signs in" in the spec), so there is no session to set.
+  - route: HTTP API
+    why: The app has no server; all data stays in SQLite on the phone and nothing is uploaded or shared.

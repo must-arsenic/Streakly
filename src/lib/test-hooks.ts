@@ -73,12 +73,16 @@ export async function loadHookState(): Promise<void> {
 type SeedHabit = { name: string; colour?: number; ticks?: (number | Day)[] };
 
 /** Stores habits in this order after any already stored; ticks are days ago (0 = today) or dates. */
-async function put(habits: SeedHabit[], options: { theme?: Theme; guideDone?: boolean } = {}): Promise<void> {
+async function put(
+  habits: SeedHabit[],
+  options: { theme?: Theme; guideDone?: boolean; failed?: { habit: number; ago: number; ticked: boolean } } = {},
+): Promise<void> {
   const db = await open();
   const now = today();
   await db.tx(async (t = db) => {
     const max = await t.all<{ p: number | null }>("SELECT MAX(position) AS p FROM habits;");
     let position = (max[0]?.p ?? -1) + 1;
+    const ids: number[] = [];
     for (const [i, h] of habits.entries()) {
       await t.run(
         "INSERT INTO habits (name, colour, position, created_on) VALUES (?, ?, ?, ?);",
@@ -89,6 +93,7 @@ async function put(habits: SeedHabit[], options: { theme?: Theme; guideDone?: bo
       );
       position += 1;
       const [{ id }] = await t.all<{ id: number }>("SELECT last_insert_rowid() AS id;");
+      ids.push(id);
       for (const ago of h.ticks ?? []) {
         const day = typeof ago === "number" ? addDays(now, -ago) : ago;
         await t.run("INSERT OR IGNORE INTO ticks (habit_id, date) VALUES (?, ?);", id, day);
@@ -98,6 +103,8 @@ async function put(habits: SeedHabit[], options: { theme?: Theme; guideDone?: bo
       t.run("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;", key, value);
     await kv("guideDone", options.guideDone === false ? "0" : "1");
     if (options.theme) await kv("theme", options.theme);
+    const failed = options.failed;
+    if (failed) await kv("failedTick", JSON.stringify({ habitId: ids[failed.habit], day: addDays(now, -failed.ago), ticked: failed.ticked }));
   });
 }
 
@@ -133,6 +140,20 @@ export const seeds: Record<string, () => Promise<void>> = {
   "eight-long-names": async () => put(range(0, 7).map((i) => ({ name: longName(i), colour: i, ticks: i % 2 ? [0, 1] : [2] }))),
   "light-theme": async () => put([{ name: "Water" }], { theme: "light" }),
   "dark-theme": async () => put([{ name: "Water" }], { theme: "dark" }),
+  stretch: async () => put([{ name: "Stretch" }]),
+  "stretch-read": async () => put([{ name: "Stretch" }, { name: "Read" }]),
+  "stretch-ticked-read-not": async () => put([{ name: "Stretch", ticks: [0] }, { name: "Read" }]),
+  "stretch-read-walk": async () => put([{ name: "Stretch" }, { name: "Read" }, { name: "Walk" }]),
+  "stretch-ticked-today": async () => put([{ name: "Stretch", ticks: [0] }]),
+  "stretch-today-yesterday": async () => put([{ name: "Stretch", ticks: [0, 1] }]),
+  "stretch-green": async () => put([{ name: "Stretch", colour: 1 }]),
+  "stretch-3-ticks": async () => put([{ name: "Stretch", ticks: [0, 1, 30] }]),
+  "two-habits-old-tick-dark": async () =>
+    put([{ name: "Stretch", ticks: [0, 1] }, { name: "Read", ticks: [0, 30] }], { theme: "dark" }),
+  "stretch-failed-tick": async () =>
+    put([{ name: "Stretch" }, { name: "Read" }], { failed: { habit: 0, ago: 0, ticked: true } }),
+  "stretch-failed-tick-expired": async () =>
+    put([{ name: "Stretch" }, { name: "Read" }], { failed: { habit: 0, ago: 7, ticked: true } }),
   "writes-fail": async () => {
     setWritesFail(true);
     await persistFaults();

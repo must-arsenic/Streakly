@@ -1,0 +1,138 @@
+[
+  {
+    "name": "first-run",
+    "what": "Nothing stored and the first-run guide not finished: a fresh install (the same as after reset)."
+  },
+  {
+    "name": "no-habits",
+    "what": "Guide finished, no habits: Today and Week show \"No habits yet\"."
+  },
+  {
+    "name": "drink-water",
+    "what": "Guide finished, one habit \"Drink water\" (first colour) with no ticks."
+  },
+  {
+    "name": "water-read-stretch",
+    "what": "Guide finished, habits \"Water\", \"Read\", \"Stretch\" in that order, no ticks."
+  },
+  {
+    "name": "three-habits-ticked-dark",
+    "what": "Guide finished, theme \"Dark\", habits \"Water\" (ticked today, 1 and 2 days ago), \"Read\" (today, 3 days ago), \"Stretch\" (1, 2, 4, 5 days ago): 9 ticks."
+  },
+  {
+    "name": "two-habits",
+    "what": "Guide finished, habits \"Water\" and \"Read\", no ticks."
+  },
+  {
+    "name": "water-unticked",
+    "what": "Guide finished, one habit \"Water\", not ticked today or yesterday (no ticks)."
+  },
+  {
+    "name": "water-ticked-today",
+    "what": "Guide finished, one habit \"Water\" ticked today only, not yesterday: \"1-day streak\"."
+  },
+  {
+    "name": "water-ticked-today-dark",
+    "what": "Guide finished, theme \"Dark\", one habit \"Water\" ticked today only."
+  },
+  {
+    "name": "water-streak-5",
+    "what": "Guide finished, one habit \"Water\" ticked today and each of the 4 days before: \"5-day streak\", \"Best: 5\"."
+  },
+  {
+    "name": "water-best-7",
+    "what": "Guide finished, one habit \"Water\" with a 7-day run (16 to 10 days ago) and a 2-day run ending today: \"2-day streak\", \"Best: 7\"."
+  },
+  {
+    "name": "read-ticked-today",
+    "what": "Guide finished, one habit \"Read\" ticked today only: \"1-day streak\"."
+  },
+  {
+    "name": "read-today-and-2-days-ago",
+    "what": "Guide finished, one habit \"Read\" ticked today and 2 days ago, not yesterday: \"1-day streak\"."
+  },
+  {
+    "name": "read-3-days-ago",
+    "what": "Guide finished, one habit \"Read\" ticked only 3 days ago."
+  },
+  {
+    "name": "read-2026-11-09",
+    "what": "Guide finished, one habit \"Read\" with one tick stored for the calendar date 2026-11-09."
+  },
+  {
+    "name": "stretch-5-ticks",
+    "what": "Guide finished, one habit \"Stretch\" (third colour) ticked today and each of the 4 days before: 5 stored ticks."
+  },
+  {
+    "name": "eight-long-names",
+    "what": "Guide finished, 8 habits each named with exactly 40 characters, one per colour, some ticked."
+  },
+  {
+    "name": "light-theme",
+    "what": "Guide finished, theme \"Light\", one habit \"Water\" with no ticks."
+  },
+  {
+    "name": "dark-theme",
+    "what": "Guide finished, theme \"Dark\", one habit \"Water\" with no ticks."
+  },
+  {
+    "name": "stretch",
+    "what": "Guide finished, one habit \"Stretch\" (Violet) with no ticks: \"0-day streak\", \"Best: 0\"."
+  },
+  {
+    "name": "stretch-read",
+    "what": "Guide finished, habits \"Stretch\" and \"Read\" in that order, no ticks."
+  },
+  {
+    "name": "stretch-ticked-read-not",
+    "what": "Guide finished, habits \"Stretch\" (ticked today only) and \"Read\" (no ticks): \"1 of 2 ticked\"."
+  },
+  {
+    "name": "stretch-read-walk",
+    "what": "Guide finished, habits \"Stretch\", \"Read\" and \"Walk\" in that order (ids 1, 2, 3 after reset), no ticks."
+  },
+  {
+    "name": "stretch-ticked-today",
+    "what": "Guide finished, one habit \"Stretch\" ticked today only, not yesterday: \"1-day streak\"."
+  },
+  {
+    "name": "stretch-today-yesterday",
+    "what": "Guide finished, one habit \"Stretch\" ticked today and yesterday: \"2-day streak\", 2 stored ticks."
+  },
+  {
+    "name": "stretch-green",
+    "what": "Guide finished, one habit \"Stretch\" with colour Green, no ticks."
+  },
+  {
+    "name": "stretch-3-ticks",
+    "what": "Guide finished, one habit \"Stretch\" with 3 ticks: today, yesterday and 30 days before today."
+  },
+  {
+    "name": "two-habits-old-tick-dark",
+    "what": "Guide finished, theme \"Dark\", habits \"Stretch\" (ticked today and yesterday) and \"Read\" (ticked today and 30 days before today): 4 ticks."
+  },
+  {
+    "name": "stretch-failed-tick",
+    "what": "Guide finished, habits \"Stretch\" and \"Read\", no ticks, and a remembered failed change that ticks \"Stretch\" today: Today shows \"Couldn't save your change\" with \"Try again\"."
+  },
+  {
+    "name": "stretch-failed-tick-expired",
+    "what": "Guide finished, habits \"Stretch\" and \"Read\", no ticks, and a remembered failed change that ticks \"Stretch\" on the day 7 days before today (no longer tickable)."
+  },
+  {
+    "name": "writes-fail",
+    "what": "Adds nothing: from now on every save to storage fails (load it after a data seed). Reset or \"writes-work\" ends it."
+  },
+  {
+    "name": "writes-work",
+    "what": "Adds nothing: saves to storage work again after \"writes-fail\"."
+  },
+  {
+    "name": "load-fails-once",
+    "what": "Adds nothing: the next load of the habit list (Today or Week) fails, then loads work again, so \"Try again\" shows the stored habits. Load it after a data seed, e.g. \"two-habits\"."
+  },
+  {
+    "name": "reads-work",
+    "what": "Adds nothing: clears forced empty/slow/error states and read failures, so loads read storage again."
+  }
+]

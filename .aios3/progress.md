@@ -97,3 +97,9 @@
   name Text (the phone link since round 12) opened Edit habit on release (Text had no onLongPress). Fixed with a no-op
   onLongPress on the name Text; the row's hold timer still picks the habit up. Theme radios also report selected.
   with-today (dev menu open over Week) and save-errors.theme (screen looks right) still unexplained.
+
+## Version 1 build (test hooks + contract), started 2026-11-11
+- Hooks already in place (deep links src/app/__test/[action].tsx, src/lib/test-hooks.ts). Contract now lives in
+  .aios/contract/ (openapi.yaml: no HTTP API, paths {}, hooks under x-test-hooks, sign-in in x-unsupported;
+  seeds.json: the 23 old seeds + 11 "Stretch"/failed-tick seeds for the new items). Old root contract/ untouched.
+- New seeds tested in src/lib/test-hooks-seeds.test.ts. Next: after the engine's go-ahead, check build/start/hooks.
