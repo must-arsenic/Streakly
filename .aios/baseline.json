@@ -1,0 +1,26 @@
+{
+  "known": [
+    {
+      "item": "ac~streakly.today.rows~1",
+      "why": "Show today's long local date above the main heading.\nOn the phone (Android, Expo Go) the screen when it failed is .aios3/phone/ac-streakly-today-rows-1.png: open it to see what a person would see there."
+    },
+    {
+      "item": "ac~streakly.add-habit.from-empty~1",
+      "why": "Make the default colour visibly selected when the empty add form opens.\nOn the phone (Android, Expo Go) the screen when it failed is .aios3/phone/ac-streakly-add-habit-from-empty-1.png: open it to see what a person would see there."
+    },
+    {
+      "item": "ac~streakly.edit-habit.filled~1",
+      "why": "Show the habit's saved colour as selected when its edit form opens.\nOn the phone (Android, Expo Go) the screen when it failed is .aios3/phone/ac-streakly-edit-habit-filled-1.png: open it to see what a person would see there."
+    },
+    {
+      "item": "ac~streakly.delete-habit.clears-failed~1",
+      "why": "Deleting a habit must clear its remembered failed tick and remove the related save-error banner from Today.\nOn the phone (Android, Expo Go) the screen when it failed is .aios3/phone/ac-streakly-delete-habit-clears-failed-1.png: open it to see what a person would see there."
+    },
+    {
+      "item": "ac~streakly.failed-tick-kept.expired~1",
+      "why": "When an expired retry is refused, clear the remembered change and dismiss its save-error banner.\nOn the phone (Android, Expo Go) the screen when it failed is .aios3/phone/ac-streakly-failed-tick-kept-expired-1.png: open it to see what a person would see there."
+    }
+  ],
+  "marks": [],
+  "steps_failing": []
+}
