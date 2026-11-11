@@ -2,7 +2,7 @@
 // a habit and tapping a name edits it.
 import { router, useIsFocused } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CheckMark, PlusIcon } from "@/components/icons";
 import { ReorderList } from "@/components/reorder-list";
@@ -77,8 +77,8 @@ export default function Today() {
         {saver.failed ? <SaveError onRetry={saver.retry} busy={saver.busy} /> : null}
         {body}
       </Page>
-      <View pointerEvents="box-none" style={styles.fabLayer}>
-        <View pointerEvents="box-none" style={styles.fabColumn}>
+      <View style={[styles.fabLayer, styles.passThrough]}>
+        <View style={[styles.fabColumn, styles.passThrough]}>
           <Pressable
             role="button"
             accessibilityRole="button"
@@ -125,7 +125,8 @@ function HabitRow({
       <Pressable
         role="link"
         accessibilityRole="link"
-        accessibilityLabel={habit.name}
+        // On a phone the visible name names it, so the name (not the tick box) answers to "Stretch".
+        accessibilityLabel={Platform.OS === "web" ? habit.name : undefined}
         accessibilityHint="Edit this habit"
         onPress={() => router.push(`/habits/${habit.id}`)}
         onLongPress={() => undefined}
@@ -185,6 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
+  passThrough: { pointerEvents: "box-none" },
   fabLayer: {
     position: "absolute",
     left: 0,

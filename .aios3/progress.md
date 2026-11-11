@@ -81,3 +81,7 @@
 - Round 10 (Edit habit items + with-today "Today navigation"): /habits/<id> also accepts a habit's name (findHabit);
   /today and any unknown address (+not-found) redirect to Today. Tried moving Add/Edit into the tab navigator
   (href: null) so the tab bar stays: expo-router 58 then won't route to them (/habits/new fell back to /). Reverted.
+- Round 11 (phone screenshots promised at /tmp/aios3-phone/ but never present on this machine): LogBox silenced in hooks
+  builds (Expo Go dev toasts can cover the tab bar and controls); FAB pass-through uses style.pointerEvents (the prop is
+  deprecated: a warning); the habit-name link's accessibility label is web-only, so on the phone the visible name
+  answers to "Stretch" and the tick box is the only element labelled with the habit's name.
