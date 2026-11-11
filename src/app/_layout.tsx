@@ -106,6 +106,8 @@ function Frame() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false, title: "Streakly" }} />
           <Stack.Screen name="habits/new" options={{ title: "Add habit" }} />
           <Stack.Screen name="habits/[id]" options={{ title: "Edit habit" }} />
+          <Stack.Screen name="today" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
           <Stack.Screen name="welcome" options={{ headerShown: false, title: "Welcome to Streakly" }} />
           <Stack.Screen name="__test/[action]" options={{ headerShown: false }} />
         </Stack>

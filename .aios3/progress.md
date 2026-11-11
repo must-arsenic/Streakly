@@ -1,6 +1,6 @@
 # Streakly progress
 
-## State: all items done, every test passes (28 jest, 51 playwright)
+## State: all items done, every test passes (28 jest, 53 playwright)
 
 ## How it's built
 - Data: SQLite via src/lib/db.ts (habits, ticks, kv). Store: src/lib/store.ts, one tx per change, writePoint() fault after first change.
@@ -78,3 +78,6 @@
   (Phone runners like Maestro can long-press, then swipe, but not hold-and-move.)
 - Round 9 re-sent (word for word, status.json removed: likely before my round 9 commit was checked). Added plain tab
   accessibility labels ("Today", not React Navigation's "Today, tab, 1 of 3" on the phone).
+- Round 10 (Edit habit items + with-today "Today navigation"): /habits/<id> also accepts a habit's name (findHabit);
+  /today and any unknown address (+not-found) redirect to Today. Tried moving Add/Edit into the tab navigator
+  (href: null) so the tab bar stays: expo-router 58 then won't route to them (/habits/new fell back to /). Reverted.

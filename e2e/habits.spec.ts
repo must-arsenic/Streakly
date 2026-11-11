@@ -227,3 +227,20 @@ test("[e2e->ac~streakly.habit-reorder.persists~1] long-press picks a habit up; a
   await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Water", "Read"]);
   await expect(page).not.toHaveURL(/habits/);
 });
+
+test("[e2e->ac~streakly.habit-delete.confirm~1] Edit habit opens by the habit's name too", async ({ page }) => {
+  await start(page, "stretch-5-ticks");
+  await page.goto("/habits/Stretch");
+  await expect(page.getByLabel("Name")).toHaveValue("Stretch");
+  await page.getByRole("button", { name: "Delete habit" }).click();
+  await expect(page.getByRole("dialog").getByText("Delete this habit and all its history?")).toBeVisible();
+});
+
+test("[e2e->ac~streakly.streak-current.with-today~1] /today and unknown addresses lead to Today", async ({ page }) => {
+  await start(page, "read-ticked-today");
+  await page.goto("/today");
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
+  await expect(page.getByText("1-day streak")).toBeVisible();
+  await page.goto("/nowhere/at-all");
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
+});

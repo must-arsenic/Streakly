@@ -65,6 +65,18 @@ export async function loadHabit(id: number): Promise<Habit | null> {
   return rows[0] ? toHabit(rows[0]) : null;
 }
 
+/** A habit by its id, or else by its name (the first in list order, ignoring case). */
+export async function findHabit(idOrName: string): Promise<Habit | null> {
+  const key = idOrName.trim();
+  if (/^\d+$/.test(key)) {
+    const byId = await loadHabit(Number(key));
+    if (byId) return byId;
+  }
+  const db = await open();
+  const rows = await db.all<HabitRow>("SELECT * FROM habits WHERE lower(name) = lower(?) ORDER BY position, id LIMIT 1;", key);
+  return rows[0] ? toHabit(rows[0]) : null;
+}
+
 export async function loadSettings(): Promise<Settings> {
   const db = await open();
   const rows = await db.all<{ key: string; value: string }>("SELECT key, value FROM kv WHERE key IN ('theme', 'guideDone');");

@@ -13,8 +13,7 @@ import { usePalette } from "@/theme/use-palette";
 
 export default function EditHabit() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const habitId = Number(id);
-  const [habit, retry] = useHabit(habitId);
+  const [habit, retry] = useHabit(decodeURIComponent(String(id ?? "")));
   const saver = useSave();
   const p = usePalette();
   const [asking, setAsking] = useState(false);

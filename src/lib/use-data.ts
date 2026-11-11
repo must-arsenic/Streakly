@@ -2,7 +2,7 @@
 // screen's route, and is read again whenever stored data changes.
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { emptyList, type Habit, type HabitList, loadHabit, loadList, onChange } from "./store";
+import { emptyList, findHabit, type Habit, type HabitList, loadList, onChange } from "./store";
 import { retryRead, testable } from "./test-hooks";
 
 export type Loaded<T> = { state: "loading" } | { state: "error" } | { state: "ready"; data: T };
@@ -35,7 +35,7 @@ export function useHabitList(route: string): [Loaded<HabitList>, () => void] {
   return useRead(route, () => testable(route, emptyList, loadList), [route]);
 }
 
-/** One habit, for Edit habit. */
-export function useHabit(id: number): [Loaded<Habit | null>, () => void] {
-  return useRead("/habits/[id]", () => testable("/habits/[id]", null, () => loadHabit(id)), [id]);
+/** One habit, for Edit habit: by its id, or by its name. */
+export function useHabit(idOrName: string): [Loaded<Habit | null>, () => void] {
+  return useRead("/habits/[id]", () => testable("/habits/[id]", null, () => findHabit(idOrName)), [idOrName]);
 }
