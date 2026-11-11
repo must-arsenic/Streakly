@@ -1,14 +1,16 @@
-// Settings: pick the theme, or delete all data.
+// Settings: pick the theme, restore archived habits, or delete all data.
 import { router, useIsFocused } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Confirm, Page, SaveError, Title } from "@/components/ui";
+import { Button, Confirm, Loading, LoadError, Page, SaveError, Title } from "@/components/ui";
 import { useApp } from "@/lib/app-state";
-import { deleteAll, setTheme, type Theme } from "@/lib/store";
+import { deleteAll, restoreHabit, setTheme, type Theme } from "@/lib/store";
+import { best } from "@/lib/streaks";
+import { useArchived } from "@/lib/use-data";
 import { useSave } from "@/lib/use-save";
 import { tokens } from "@/theme/tokens";
-import { usePalette } from "@/theme/use-palette";
+import { useHabitColours, usePalette } from "@/theme/use-palette";
 
 const themes: { value: Theme; label: string }[] = [
   { value: "system", label: "System" },
@@ -62,6 +64,7 @@ export default function Settings() {
           </View>
           <Text style={[styles.note, { color: p.muted }]}>"System" follows your phone's light or dark setting.</Text>
         </View>
+        <Archived onRestore={(id) => void saver.save(() => restoreHabit(id))} />
         <View style={[styles.section, { backgroundColor: p.surface, borderColor: p.border }]}>
           <Text role="heading" aria-level={2} accessibilityRole="header" style={[styles.heading, { color: p.text }]}>
             Your data
@@ -87,7 +90,62 @@ export default function Settings() {
   );
 }
 
+/** The "Archived habits" section: the most recently archived first, each with "Restore" (no delete). */
+function Archived({ onRestore }: { onRestore: (id: number) => void }) {
+  const p = usePalette();
+  const colours = useHabitColours();
+  const [archived, retry] = useArchived();
+  let body;
+  if (archived.state === "loading") body = <Loading label="Loading archived habits…" />;
+  else if (archived.state === "error") body = <LoadError onRetry={retry} label="Couldn't load archived habits" />;
+  else if (archived.data.habits.length === 0) body = <Text style={[styles.note, { color: p.muted }]}>No archived habits</Text>;
+  else {
+    const { habits, ticks } = archived.data;
+    body = (
+      <View role="list" accessibilityLabel="Archived habits" style={styles.archived}>
+        {habits.map((h) => (
+          <View key={h.id} role="listitem" testID={`archived-${h.id}`} style={[styles.archivedRow, { borderColor: p.border }]}>
+            <View
+              role="img"
+              accessibilityLabel={tokens.habit.names[h.colour]}
+              aria-label={tokens.habit.names[h.colour]}
+              testID={`archived-colour-${h.id}`}
+              style={[styles.dot, { backgroundColor: colours[h.colour] ?? p.accent }]}
+            />
+            <View style={styles.archivedText}>
+              <Text numberOfLines={1} style={[styles.archivedName, { color: p.text }]}>
+                {h.name}
+              </Text>
+              <Text style={[styles.note, { color: p.muted }]}>{`Best: ${best(ticks[h.id] ?? [])}`}</Text>
+            </View>
+            <Button label="Restore" kind="secondary" onPress={() => onRestore(h.id)} />
+          </View>
+        ))}
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.section, { backgroundColor: p.surface, borderColor: p.border }]}>
+      <Text role="heading" aria-level={2} accessibilityRole="header" style={[styles.heading, { color: p.text }]}>
+        Archived habits
+      </Text>
+      {body}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  archived: { gap: tokens.space.sm },
+  archivedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.md,
+    borderTopWidth: tokens.size.border,
+    paddingTop: tokens.space.sm,
+  },
+  dot: { width: tokens.space.md, height: tokens.space.md, borderRadius: tokens.radius.pill },
+  archivedText: { flex: 1, minWidth: 0 },
+  archivedName: { fontSize: tokens.type.body, fontWeight: "600" },
   section: {
     borderWidth: tokens.size.border,
     borderRadius: tokens.radius.surface,

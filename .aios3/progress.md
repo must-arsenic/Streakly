@@ -114,3 +114,13 @@
 - Plan: db step 2 (archived_at, restore_place); store archiveHabit/restoreHabit/loadArchived, loadList non-archived,
   tick refusals; use-save generation (waiting ticks refused after a failed tick); Settings section; Edit Archive button;
   seeds; utests; e2e.
+- Built (all done): db step 2 (archived_at, restore_place); store archiveHabit/restoreHabit/loadArchived, loadList
+  non-archived only, Habit.archivedAt/restorePlace present only when archived (v1 Habit shape kept);
+  tickAllowed() in setTick/toggleTick refuses archived habits and any tick but the remembered failed one (TickRefused,
+  carrying retry of the remembered one); deleteHabit/deleteAll clear failedTick; expired retry forgets it
+  (TickNotSaved.cleared); forgetFailedTick only forgets the same change and announces.
+- use-save: saveQueue (pure, tested) with a generation: tick changes queued before a failed tick are refused.
+  retry keeps the banner (busy) until the change settles (a reload right after "Try again" lost the forget).
+  Today syncs the banner with kv failedTick on every change (archive/delete clear it).
+- Faults: archivedFail (seed archived-load-fails), slowFail (seed next-tick-fails-slowly, 3 s then fail).
+- Tests: src/lib/archive.test.ts, src/lib/use-save.test.ts, e2e/archive.spec.ts. 53 jest, 73 e2e (x2) pass.

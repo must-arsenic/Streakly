@@ -2,7 +2,7 @@
 // screen's route, and is read again whenever stored data changes.
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { emptyList, findHabit, type Habit, type HabitList, loadList, onChange } from "./store";
+import { emptyList, findHabit, type Habit, type HabitList, loadArchived, loadList, onChange } from "./store";
 import { retryRead, testable } from "./test-hooks";
 
 export type Loaded<T> = { state: "loading" } | { state: "error" } | { state: "ready"; data: T };
@@ -38,4 +38,9 @@ export function useHabitList(route: string): [Loaded<HabitList>, () => void] {
 /** One habit, for Edit habit: by its id, or by its name. */
 export function useHabit(idOrName: string): [Loaded<Habit | null>, () => void] {
   return useRead("/habits/[id]", () => testable("/habits/[id]", null, () => findHabit(idOrName)), [idOrName]);
+}
+
+/** The archived habits, for Settings' "Archived habits" section. */
+export function useArchived(): [Loaded<HabitList>, () => void] {
+  return useRead("/settings/archived", () => testable("/settings/archived", emptyList, loadArchived), []);
 }

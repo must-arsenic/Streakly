@@ -64,9 +64,9 @@ export function useSave(): Saver {
     (delta) => setPending((n) => n + delta),
   );
   const save = useCallback((change: () => Promise<unknown>, options?: { tick?: boolean }) => enqueue.current!(change, options), []);
+  // The banner stays (busy) until the change is saved, or refused for good.
   const retry = useCallback(() => {
     if (!failed) return;
-    setFailed(null);
     void save(failed.run, { tick: failed.tick });
   }, [failed, save]);
   const offer = useCallback((change: () => Promise<unknown>) => setFailed({ run: change, tick: false }), []);

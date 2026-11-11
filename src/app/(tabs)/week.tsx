@@ -76,7 +76,7 @@ export default function Week() {
                         accessibilityState={{ checked: on }}
                         aria-checked={on}
                         testID={`cell-${habit.id}-${day}`}
-                        onPress={() => void saver.save(() => toggleTick(habit.id, day))}
+                        onPress={() => void saver.save(() => toggleTick(habit.id, day), { tick: true })}
                         style={[styles.cell, { borderColor: on ? colour : p.controlBorder, backgroundColor: on ? colour : p.surface }]}
                       >
                         {on ? <CheckMark colour={p.onAccent} size={20} /> : null}

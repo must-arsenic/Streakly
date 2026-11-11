@@ -337,10 +337,16 @@ async function rememberFailedTick(tick: FailedTick): Promise<void> {
 async function forgetFailedTick(tick: FailedTick): Promise<void> {
   try {
     const db = await open();
+    let gone = false;
     await db.tx(async (t = db) => {
       const waiting = await readFailedTick(t);
-      if (waiting && same(waiting, tick)) await t.run("DELETE FROM kv WHERE key = ?;", FAILED_TICK);
+      if (waiting && same(waiting, tick)) {
+        await t.run("DELETE FROM kv WHERE key = ?;", FAILED_TICK);
+        gone = true;
+      }
     });
+    // screens offering it to try again see that it's gone
+    if (gone) announce();
   } catch {
     // nothing to forget
   }

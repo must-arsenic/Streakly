@@ -9,7 +9,7 @@ import { ReorderList } from "@/components/reorder-list";
 import { Empty, Loading, LoadError, Page, SaveError, Title } from "@/components/ui";
 import { useApp } from "@/lib/app-state";
 import { longDate } from "@/lib/days";
-import { failedTick, type Habit, reorder, saveTick, toggleTick } from "@/lib/store";
+import { failedTick, type Habit, onChange, reorder, toggleTick } from "@/lib/store";
 import { best, current } from "@/lib/streaks";
 import { useHabitList } from "@/lib/use-data";
 import { useSave } from "@/lib/use-save";
@@ -21,15 +21,19 @@ export default function Today() {
   const { today } = useApp();
   const [list, retryLoad] = useHabitList("/");
   const saver = useSave();
-  const { offer } = saver;
+  const { sync } = saver;
   const [lifted, setLifted] = useState(false);
-  // A tick that couldn't be saved before the app last closed: offer to try it again.
+  // A tick that couldn't be saved (also before the app last closed): offer to try it again, until
+  // it is gone (saved, refused, or its habit archived or deleted).
   useEffect(() => {
-    failedTick().then(
-      (tick) => tick && offer(() => saveTick(tick)),
-      () => undefined,
-    );
-  }, [offer]);
+    const check = () =>
+      void failedTick().then(
+        (tick) => sync(tick),
+        () => undefined,
+      );
+    check();
+    return onChange(check);
+  }, [sync]);
   const p = usePalette();
   if (!focused) return null;
 
@@ -61,7 +65,7 @@ export default function Today() {
               streak={current(dates, today)}
               best={best(dates)}
               lifted={lifted}
-              onTick={() => void saver.save(() => toggleTick(id, today))}
+              onTick={() => void saver.save(() => toggleTick(id, today), { tick: true })}
             />
           );
         }}
