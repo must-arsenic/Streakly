@@ -112,6 +112,7 @@ function HabitRow({
 }) {
   const p = usePalette();
   const colour = useHabitColours()[habit.colour] ?? p.accent;
+  const open = () => router.push(`/habits/${habit.id}`);
   return (
     <View
       testID={`habit-row-${habit.id}`}
@@ -128,12 +129,25 @@ function HabitRow({
         // On a phone the visible name names it, so the name (not the tick box) answers to "Stretch".
         accessibilityLabel={Platform.OS === "web" ? habit.name : undefined}
         accessibilityHint="Edit this habit"
-        onPress={() => router.push(`/habits/${habit.id}`)}
+        onPress={open}
         onLongPress={() => undefined}
         delayLongPress={500}
         style={styles.text}
       >
-        <Text style={[styles.name, { color: p.text }]}>{habit.name}</Text>
+        {Platform.OS === "web" ? (
+          <Text style={[styles.name, { color: p.text }]}>{habit.name}</Text>
+        ) : (
+          // On a phone the name itself is the link: a tap on "Stretch" lands here, not on the tick box.
+          <Text
+            accessibilityRole="link"
+            accessibilityHint="Edit this habit"
+            onPress={open}
+            suppressHighlighting
+            style={[styles.name, styles.nameLink, { color: p.text }]}
+          >
+            {habit.name}
+          </Text>
+        )}
         <View style={styles.meta}>
           <Text style={[styles.streak, { color: p.text }]}>{`${streak}-day streak`}</Text>
           <Text style={[styles.metaText, { color: p.muted }]}>·</Text>
@@ -174,6 +188,7 @@ const styles = StyleSheet.create({
   bar: { width: tokens.size.bar, alignSelf: "stretch", borderRadius: tokens.radius.pill },
   text: { flex: 1, minWidth: 0, justifyContent: "center", minHeight: tokens.size.tick },
   name: { fontSize: tokens.type.headline, fontWeight: "600" },
+  nameLink: { alignSelf: "flex-start", paddingVertical: tokens.space.xs },
   meta: { flexDirection: "row", flexWrap: "wrap", gap: tokens.space.xs, marginTop: tokens.space.xs },
   streak: { fontSize: tokens.type.small, fontWeight: "600" },
   metaText: { fontSize: tokens.type.small },

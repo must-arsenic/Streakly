@@ -85,3 +85,8 @@
   builds (Expo Go dev toasts can cover the tab bar and controls); FAB pass-through uses style.pointerEvents (the prop is
   deprecated: a warning); the habit-name link's accessibility label is web-only, so on the phone the visible name
   answers to "Stretch" and the tick box is the only element labelled with the habit's name.
+- Round 12: phone screenshots arrived in .aios3/phone/. They showed (1) tapping a habit's name ("Stretch") on the phone
+  toggled its tick box instead of opening Edit habit; (2) Expo Go's floating tools button (top right) covers the header's
+  right end, where "Delete habit" was (an Edit screenshot had the element inspector open). Fixes: "Delete habit" back in
+  the form under Cancel/Save; on the phone the name Text itself is the link (onPress), tick box keeps its label.
+  Keep nothing tappable under the top-right corner on the phone.
