@@ -90,3 +90,6 @@
   right end, where "Delete habit" was (an Edit screenshot had the element inspector open). Fixes: "Delete habit" back in
   the form under Cancel/Save; on the phone the name Text itself is the link (onPress), tick box keeps its label.
   Keep nothing tappable under the top-right corner on the phone.
+- Round 13: new screenshots: tapping "Stretch" on the phone still toggled the tick box (the runner prefers the box when
+  both carry the name). On the phone the tick box is now labelled "<name>, done today"; the name alone opens Edit habit.
+  Web labels unchanged. If tick items regress, this is why (runner tapping the bare name to tick).

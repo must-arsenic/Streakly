@@ -157,7 +157,8 @@ function HabitRow({
       <Pressable
         role="checkbox"
         accessibilityRole="checkbox"
-        accessibilityLabel={habit.name}
+        // On a phone, "Stretch" alone names the habit's name (which opens Edit habit), not this box.
+        accessibilityLabel={Platform.OS === "web" ? habit.name : `${habit.name}, done today`}
         accessibilityState={{ checked: ticked }}
         aria-checked={ticked}
         onPress={onTick}
