@@ -148,3 +148,4 @@
   restored habit "missing" on Today), Today and Week now re-read their list each time they come into view
   (useHabitList(route, focused)). The swatch "selected" state fixed unsaved-edits (and the v1 colour known failures).
   73 jest; e2e 115 (x2) and archive x10 pass.
+- Round 4 re-sent word for word (phone screenshots from 05:28, before the 3f41dcf fix): no change; status rewritten.
