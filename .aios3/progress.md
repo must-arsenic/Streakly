@@ -136,3 +136,9 @@
   src/lib/items.test.ts (utest) and e2e/items.spec.ts (e2e), titled with the exact ids per each item's Needs.
   RULE: every item id in the spec needs a test titled [utest->id] / [e2e->id] for each of its Needs.
   Then tagged the remaining 29 items too (every Needs now has an exact-id test). 73 jest, 115 e2e (x2) pass.
+- Round 3 (002): restore.place/place-fewer/streak and archive.unsaved-edits failed on the phone, though round 2 (same
+  app code) passed them and the screenshots show the right data: timing. Found a real race: Restore went to Today
+  only after its save, so a tab tapped meanwhile was overridden (my own archive.hides flaked 1/15). Restore now goes
+  to Today only if Settings is still in view when the save ends. Colour swatches also report "selected" (phone
+  runners read checked or selected; edit-habit.filled/add-habit.from-empty known failures were about this).
+  add-habit.save e2e made sturdier (waits for the list after reload). 73 jest; e2e 230 (x2) and archive x10 pass.

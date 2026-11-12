@@ -1,5 +1,5 @@
 // Settings: pick the theme, restore archived habits, or delete all data.
-import { router, useIsFocused } from "expo-router";
+import { router, useIsFocused, useNavigation } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -20,6 +20,7 @@ const themes: { value: Theme; label: string }[] = [
 
 export default function Settings() {
   const focused = useIsFocused();
+  const navigation = useNavigation();
   const { settings } = useApp();
   const saver = useSave();
   const p = usePalette();
@@ -66,8 +67,9 @@ export default function Settings() {
         </View>
         <Archived
           onRestore={(id) =>
-            // restored: back to Today, where it shows again in its place (as archiving goes to Today)
-            void saver.save(() => restoreHabit(id)).then((done) => done && router.navigate("/"))
+            // restored: back to Today, where it shows again in its place (as archiving goes to Today),
+            // unless the person already went to another screen while it saved
+            void saver.save(() => restoreHabit(id)).then((done) => done && navigation.isFocused() && router.navigate("/"))
           }
         />
         <View style={[styles.section, { backgroundColor: p.surface, borderColor: p.border }]}>

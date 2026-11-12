@@ -206,7 +206,9 @@ test("[e2e->ac~streakly.add-habit.save~1] add Read in Teal below Stretch", async
   await page.getByRole("button", { name: "Save" }).click();
   await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Read"]);
   await page.reload();
-  await page.getByText("Read", { exact: true }).click();
+  await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Read"]);
+  await page.getByRole("link", { name: "Read", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Name" })).toHaveValue("Read");
   await expect(page.getByRole("radio", { name: "Teal" })).toHaveAttribute("aria-checked", "true");
 });
 

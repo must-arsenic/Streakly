@@ -89,7 +89,8 @@ export function HabitForm({
                 role="radio"
                 accessibilityRole="radio"
                 accessibilityLabel={tokens.habit.names[i]}
-                accessibilityState={{ checked: on }}
+                // checked and selected: phone test runners read either
+                accessibilityState={{ checked: on, selected: on }}
                 aria-checked={on}
                 testID={`swatch-${i}`}
                 onPress={() => setColour(i)}
