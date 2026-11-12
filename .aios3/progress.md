@@ -124,3 +124,4 @@
   Today syncs the banner with kv failedTick on every change (archive/delete clear it).
 - Faults: archivedFail (seed archived-load-fails), slowFail (seed next-tick-fails-slowly, 3 s then fail).
 - Tests: src/lib/archive.test.ts, src/lib/use-save.test.ts, e2e/archive.spec.ts. 53 jest, 73 e2e (x2) pass.
+- After the studio restart (2026-11-12): status.json gone; re-ran all checks on the new date: 53 jest, 73 e2e, typecheck, lint, export pass.
