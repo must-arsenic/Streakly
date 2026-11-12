@@ -135,4 +135,4 @@
   and my v1 tests carry the repo's old tags (save-errors.tick, tick-today.tick, ...), not the current item ids. Added
   src/lib/items.test.ts (utest) and e2e/items.spec.ts (e2e), titled with the exact ids per each item's Needs.
   RULE: every item id in the spec needs a test titled [utest->id] / [e2e->id] for each of its Needs.
-  71 jest, 88 e2e pass.
+  Then tagged the remaining 29 items too (every Needs now has an exact-id test). 73 jest, 115 e2e (x2) pass.

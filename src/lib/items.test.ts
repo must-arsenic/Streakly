@@ -166,3 +166,12 @@ test("[utest->ac~streakly.no-partial-delete.fail~1] storage failing partway thro
   expect((await loadList()).habits.map((h) => h.name)).toEqual(["Stretch"]);
   expect(await countTicks(id)).toBe(3);
 });
+
+test("[utest->ac~streakly.streaks.current-gap~1] ticks today and 2 days ago, none yesterday: 1", () => {
+  expect(current([today, addDays(today, -2)], today)).toBe(1);
+});
+
+test("[utest->ac~streakly.habit-name.trim~1] \"  Read  \" is stored as \"Read\"", async () => {
+  await addHabit("  Read  ", 0, today);
+  expect((await loadList()).habits[0].name).toBe("Read");
+});
