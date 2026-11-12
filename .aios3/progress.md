@@ -131,3 +131,8 @@
   waiting on Week behind a failing tick on Today is refused; rememberFailedTick announces and Today re-checks the
   failed tick on focus. "no hidden test for an earlier item" (26 v1 items) is the engine's side: nothing to change.
   54 jest, 76 e2e (x2) pass.
+- Round 2 (002): only "no hidden test for an earlier item" (26 v1 items). Cause: those items are judged by MY tests,
+  and my v1 tests carry the repo's old tags (save-errors.tick, tick-today.tick, ...), not the current item ids. Added
+  src/lib/items.test.ts (utest) and e2e/items.spec.ts (e2e), titled with the exact ids per each item's Needs.
+  RULE: every item id in the spec needs a test titled [utest->id] / [e2e->id] for each of its Needs.
+  71 jest, 88 e2e pass.
