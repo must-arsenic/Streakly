@@ -7,7 +7,7 @@ import { retryRead, testable } from "./test-hooks";
 
 export type Loaded<T> = { state: "loading" } | { state: "error" } | { state: "ready"; data: T };
 
-function useRead<T>(route: string, read: () => Promise<T>, deps: unknown[]): [Loaded<T>, () => void] {
+function useRead<T>(route: string, read: () => Promise<T>, deps: unknown[]): [Loaded<T>, () => void, () => void] {
   const [loaded, setLoaded] = useState<Loaded<T>>({ state: "loading" });
   const run = useRef(0);
   const load = useCallback((showLoading: boolean) => {
@@ -27,20 +27,30 @@ function useRead<T>(route: string, read: () => Promise<T>, deps: unknown[]): [Lo
     retryRead(route);
     load(true);
   }, [load, route]);
-  return [loaded, retry];
+  const reload = useCallback(() => load(false), [load]);
+  return [loaded, retry, reload];
 }
 
-/** The habit list for a screen ("/" or "/week"). */
-export function useHabitList(route: string): [Loaded<HabitList>, () => void] {
-  return useRead(route, () => testable(route, emptyList, loadList), [route]);
+/** The habit list for a screen ("/" or "/week"), read again each time the screen comes into view. */
+export function useHabitList(route: string, focused = true): [Loaded<HabitList>, () => void] {
+  const [loaded, retry, reload] = useRead(route, () => testable(route, emptyList, loadList), [route]);
+  const seen = useRef(false);
+  useEffect(() => {
+    // the first view reads on mount; later views read again, without the loading state
+    if (focused && seen.current) reload();
+    if (focused) seen.current = true;
+  }, [focused, reload]);
+  return [loaded, retry];
 }
 
 /** One habit, for Edit habit: by its id, or by its name. */
 export function useHabit(idOrName: string): [Loaded<Habit | null>, () => void] {
-  return useRead("/habits/[id]", () => testable("/habits/[id]", null, () => findHabit(idOrName)), [idOrName]);
+  const [loaded, retry] = useRead("/habits/[id]", () => testable("/habits/[id]", null, () => findHabit(idOrName)), [idOrName]);
+  return [loaded, retry];
 }
 
 /** The archived habits, for Settings' "Archived habits" section. */
 export function useArchived(): [Loaded<HabitList>, () => void] {
-  return useRead("/settings/archived", () => testable("/settings/archived", emptyList, loadArchived), []);
+  const [loaded, retry] = useRead("/settings/archived", () => testable("/settings/archived", emptyList, loadArchived), []);
+  return [loaded, retry];
 }

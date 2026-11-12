@@ -19,7 +19,7 @@ import { useHabitColours, usePalette } from "@/theme/use-palette";
 export default function Today() {
   const focused = useIsFocused();
   const { today } = useApp();
-  const [list, retryLoad] = useHabitList("/");
+  const [list, retryLoad] = useHabitList("/", focused);
   const saver = useSave();
   const { sync } = saver;
   const [lifted, setLifted] = useState(false);

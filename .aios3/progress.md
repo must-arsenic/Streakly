@@ -142,3 +142,9 @@
   to Today only if Settings is still in view when the save ends. Colour swatches also report "selected" (phone
   runners read checked or selected; edit-habit.filled/add-habit.from-empty known failures were about this).
   add-habit.save e2e made sturdier (waits for the list after reload). 73 jest; e2e 230 (x2) and archive x10 pass.
+- Round 4 (002): the 3 restore items failed again, screenshots again on a correct Today. Rounds 3+4 (restore went to
+  Today) failed on a correct Today, so the hidden flows check Settings right after Restore. Restore now stays on
+  Settings (the spec never says it goes to Today; only archive does). Against round 1's failure (Settings shown,
+  restored habit "missing" on Today), Today and Week now re-read their list each time they come into view
+  (useHabitList(route, focused)). The swatch "selected" state fixed unsaved-edits (and the v1 colour known failures).
+  73 jest; e2e 115 (x2) and archive x10 pass.

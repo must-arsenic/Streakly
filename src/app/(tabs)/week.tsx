@@ -16,7 +16,7 @@ import { useHabitColours, usePalette } from "@/theme/use-palette";
 export default function Week() {
   const focused = useIsFocused();
   const { today } = useApp();
-  const [list, retryLoad] = useHabitList("/week");
+  const [list, retryLoad] = useHabitList("/week", focused);
   const saver = useSave();
   const p = usePalette();
   const colours = useHabitColours();
