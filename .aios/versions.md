@@ -12,3 +12,14 @@ AXB AIOS writes this file from its records; nobody edits it.
 - Commit: c2c086d5400c058d965174d44204bc3bbcac67fb
 - Usage: worker $0.89, intake, look and architecture agents $1.91; Codex not counted
 - Preview: http://127.0.0.1:62475
+
+## Version 2 · feature 002 · built 2026-11-12
+
+- Asked for: "Add a way to archive a habit instead of deleting it. An archived habit leaves Today and the week view but keeps its ticks and streaks, and Settings lists archived habits with a Restore button that brings each one back where it was."
+- Spec signed by izuulkh on 2026-11-11 at 18:07 UTC: 82 items, 60 checked in the browser
+- Look: unchanged
+- Architecture signed by izuulkh on 2026-11-11: Parts, Pages, API, Data, Archive, Restore, Lists, Auth, Integrations, Look, Tests, Days, Streaks, Saving, Reorder
+- Build 2026-11-11-streakly-2-mwcflydh: 868:46 from the architecture signature, 5 rounds, 81 of 82 items met, hidden tests ready: 50 ran, 2 rejected on the last version, 0 dropped by triage; kept from this build's earlier rounds, no design advice
+- Commit: 288e5169ea0d328b1b4d7e170c477e3d56be11ac
+- Usage: worker $9.93, intake, look and architecture agents $1.31; Codex not counted
+- Preview: http://127.0.0.1:50644
