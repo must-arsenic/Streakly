@@ -125,3 +125,9 @@
 - Faults: archivedFail (seed archived-load-fails), slowFail (seed next-tick-fails-slowly, 3 s then fail).
 - Tests: src/lib/archive.test.ts, src/lib/use-save.test.ts, e2e/archive.spec.ts. 53 jest, 73 e2e (x2) pass.
 - After the studio restart (2026-11-12): status.json gone; re-ran all checks on the new date: 53 jest, 73 e2e, typecheck, lint, export pass.
+- Round 1 (002): phone screenshots showed restore worked ("No archived habits") but the runner stayed on Settings
+  while looking for the restored habit on Today: Restore now goes to Today on success (as Archive does); a failed
+  restore stays on Settings with the banner. Review fixes: one shared save line (appLine) for every screen, so a tick
+  waiting on Week behind a failing tick on Today is refused; rememberFailedTick announces and Today re-checks the
+  failed tick on focus. "no hidden test for an earlier item" (26 v1 items) is the engine's side: nothing to change.
+  54 jest, 76 e2e (x2) pass.

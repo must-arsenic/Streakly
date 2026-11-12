@@ -64,7 +64,12 @@ export default function Settings() {
           </View>
           <Text style={[styles.note, { color: p.muted }]}>"System" follows your phone's light or dark setting.</Text>
         </View>
-        <Archived onRestore={(id) => void saver.save(() => restoreHabit(id))} />
+        <Archived
+          onRestore={(id) =>
+            // restored: back to Today, where it shows again in its place (as archiving goes to Today)
+            void saver.save(() => restoreHabit(id)).then((done) => done && router.navigate("/"))
+          }
+        />
         <View style={[styles.section, { backgroundColor: p.surface, borderColor: p.border }]}>
           <Text role="heading" aria-level={2} accessibilityRole="header" style={[styles.heading, { color: p.text }]}>
             Your data

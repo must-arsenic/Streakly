@@ -328,6 +328,8 @@ const FAILED_TICK = "failedTick";
 async function rememberFailedTick(tick: FailedTick): Promise<void> {
   try {
     await setKv(await open(), FAILED_TICK, JSON.stringify(tick));
+    // every screen offering failed ticks (Today) sees it, whichever screen made it
+    announce();
   } catch {
     // storage refused this too: the change is offered again until the app closes
   }

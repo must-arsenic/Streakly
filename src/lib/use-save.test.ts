@@ -5,7 +5,7 @@ import { today as todayDay } from "./days";
 import { clearFaults, setSlowFail, setWritesFail } from "./faults";
 import { nodeDb } from "./node-db.testutil";
 import { addHabit, failedTick, isTicked, toggleTick } from "./store";
-import { type Failed, saveQueue } from "./use-save";
+import { type Failed, newLine, saveQueue } from "./use-save";
 
 beforeEach(async () => {
   useDbForTests(nodeDb());
@@ -64,4 +64,20 @@ test("a slow failing tick (the next-tick-fails-slowly seed) refuses the tick wai
   expect(await second).toBe(false);
   expect(await isTicked(read, today)).toBe(false);
   expect(await isTicked(stretch, today)).toBe(false);
+}, 10_000);
+
+test("screens share one line: a tick waiting in another screen's queue is refused too", async () => {
+  const today = todayDay();
+  const stretch = await addHabit("Stretch", 0, today);
+  const read = await addHabit("Read", 0, today);
+  const line = newLine();
+  const failed: (Failed | null)[] = [null, null];
+  const todaySave = saveQueue((u) => void (failed[0] = u(failed[0])), () => undefined, line);
+  const weekSave = saveQueue((u) => void (failed[1] = u(failed[1])), () => undefined, line);
+  setSlowFail(true);
+  const first = todaySave(() => toggleTick(stretch, today), { tick: true });
+  const second = weekSave(() => toggleTick(read, today), { tick: true });
+  expect(await first).toBe(false);
+  expect(await second).toBe(false);
+  expect(await isTicked(read, today)).toBe(false);
 }, 10_000);

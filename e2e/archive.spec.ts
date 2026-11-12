@@ -98,16 +98,18 @@ test("[e2e->ac~streakly.restore.place~1] restore puts the habit back in its plac
   await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Walk"]);
   await tab(page, "Settings");
   await archivedRow(page, "Read").getByRole("button", { name: "Restore" }).click();
-  await expect(page.getByText("No archived habits")).toBeVisible();
-  await tab(page, "Today");
+  // Restore goes to Today, which lists it in its place
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
   await expect.poll(() => todayNames(page)).toEqual(["Stretch", "Read", "Walk"]);
+  await tab(page, "Settings");
+  await expect(page.getByText("No archived habits")).toBeVisible();
 });
 
 test("[e2e->ac~streakly.restore.streak~1] days spent archived break the current streak", async ({ page }) => {
   await start(page, "stretch-archived-5-days-ago");
   await tab(page, "Settings");
   await archivedRow(page, "Stretch").getByRole("button", { name: "Restore" }).click();
-  await tab(page, "Today");
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
   await expect(page.getByText("0-day streak")).toBeVisible();
   await expect(page.getByText("Best: 3")).toBeVisible();
 });
@@ -116,7 +118,7 @@ test("[e2e->ac~streakly.restore.tick-archived-days~1] days spent archived can be
   await start(page, "stretch-archived-3-days-ago");
   await tab(page, "Settings");
   await archivedRow(page, "Stretch").getByRole("button", { name: "Restore" }).click();
-  await expect(page.getByText("No archived habits")).toBeVisible();
+  await expect(tick(page, "Stretch")).toBeVisible();
   await tab(page, "Week");
   const cell = page.getByTestId(`cell-1-${addDays(todayDay(), -2)}`);
   await cell.click();
@@ -226,4 +228,35 @@ test("[e2e->ac~streakly.failed-tick-kept.blocks~1] other ticks wait for the fail
   await banner(page).getByRole("button", { name: "Try again" }).click();
   await expect(tick(page, "Stretch")).toHaveAttribute("aria-checked", "true");
   await expect(banner(page)).toHaveCount(0);
+});
+
+test("[e2e->ac~streakly.restore.place-fewer~1] restoring with fewer habits than its place puts it at the end", async ({ page }) => {
+  await start(page, "read-walk-archived-third");
+  await tab(page, "Settings");
+  await archivedRow(page, "Walk").getByRole("button", { name: "Restore" }).click();
+  await expect.poll(() => todayNames(page)).toEqual(["Read", "Walk"]);
+});
+
+test("[e2e->ac~streakly.failed-tick-kept.restart~1] a tick failing on Week is offered again on Today", async ({ page }) => {
+  await start(page, "stretch-read", "writes-fail");
+  await tab(page, "Week");
+  await page.getByTestId(`cell-1-${todayDay()}`).click();
+  await expect(banner(page)).toBeVisible();
+  await tab(page, "Today");
+  await expect(banner(page)).toBeVisible();
+  await expect(tick(page, "Stretch")).toHaveAttribute("aria-checked", "false");
+});
+
+test("[e2e->ac~streakly.failed-tick-kept.waiting-refused~1] a tap on Week waiting behind a failing tick on Today is refused", async ({ page }) => {
+  await start(page, "stretch-read", "next-tick-fails-slowly");
+  await tick(page, "Stretch").click();
+  await tab(page, "Week");
+  const cell = page.getByTestId(`cell-2-${todayDay()}`);
+  await cell.click();
+  await expect(banner(page)).toBeVisible({ timeout: 10_000 });
+  await expect(cell).toHaveAttribute("aria-checked", "false");
+  await page.waitForTimeout(500);
+  await page.reload();
+  await tab(page, "Week");
+  await expect(page.getByTestId(`cell-2-${todayDay()}`)).toHaveAttribute("aria-checked", "false");
 });

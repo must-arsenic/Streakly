@@ -22,22 +22,31 @@ type Saver = {
   sync: (tick: FailedTick | null) => void;
 };
 
-/** The queue behind `useSave`, without React. */
-export function saveQueue(setFailed: (update: (f: Failed | null) => Failed | null) => void, setPending: (delta: number) => void) {
-  let queue: Promise<unknown> = Promise.resolve();
-  let generation = 0;
+/** One order of saves: every screen's changes wait in it, and a failed tick refuses the ticks behind it. */
+export type SaveLine = { queue: Promise<unknown>; generation: number };
+export const newLine = (): SaveLine => ({ queue: Promise.resolve(), generation: 0 });
+
+/** The app's one line: a tick waiting on Week behind a tick failing on Today is refused too. */
+const appLine = newLine();
+
+/** The queue behind `useSave`, without React; screens share `line`. */
+export function saveQueue(
+  setFailed: (update: (f: Failed | null) => Failed | null) => void,
+  setPending: (delta: number) => void,
+  line: SaveLine = newLine(),
+) {
   return (change: () => Promise<unknown>, { tick = false } = {}): Promise<boolean> => {
     setPending(1);
-    const mine = generation;
-    const run = queue.then(async () => {
+    const mine = line.generation;
+    const run = line.queue.then(async () => {
       try {
         // a tick failed while this tick waited: refused, nothing stored
-        if (tick && mine !== generation) return false;
+        if (tick && mine !== line.generation) return false;
         await change();
         setFailed((f) => (f?.run === change ? null : f));
         return true;
       } catch (e) {
-        if (e instanceof TickNotSaved) generation += 1;
+        if (e instanceof TickNotSaved) line.generation += 1;
         if (e instanceof TickNotSaved && e.cleared) {
           setFailed(() => null);
           return false;
@@ -50,7 +59,7 @@ export function saveQueue(setFailed: (update: (f: Failed | null) => Failed | nul
         setPending(-1);
       }
     });
-    queue = run;
+    line.queue = run.catch(() => undefined);
     return run;
   };
 }
@@ -62,6 +71,7 @@ export function useSave(): Saver {
   enqueue.current ??= saveQueue(
     (update) => setFailed(update),
     (delta) => setPending((n) => n + delta),
+    appLine,
   );
   const save = useCallback((change: () => Promise<unknown>, options?: { tick?: boolean }) => enqueue.current!(change, options), []);
   // The banner stays (busy) until the change is saved, or refused for good.

@@ -33,7 +33,8 @@ export default function Today() {
       );
     check();
     return onChange(check);
-  }, [sync]);
+    // and again each time Today comes back into view
+  }, [sync, focused]);
   const p = usePalette();
   if (!focused) return null;
 
